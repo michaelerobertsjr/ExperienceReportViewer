@@ -2,7 +2,8 @@ module.exports = function(grunt) {
 
     grunt.initConfig({
         clean: {
-            build: ['build/*']
+            full: ['build/*'],
+            fast: ['build/js/*', 'build/app.html']
         },
         copy: {
             lib: {
@@ -32,8 +33,9 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-contrib-copy');
     grunt.loadNpmTasks('grunt-bake');
 
-    grunt.registerTask('build', ['clean', 'copy', 'bake']);
+    grunt.registerTask('deploy', ['clean:full', 'copy', 'bake']);
+    grunt.registerTask('deploy-fast', ['clean:fast', 'copy:js', 'bake']);
 
-    grunt.registerTask('default', ['build'])
+    grunt.registerTask('default', ['deploy-fast']);
 
 }

@@ -1,40 +1,48 @@
 var navigation = {
     init:function() {
-        navigation.registerStatements();
+        navigation.registerViewLinks();
     },
-    registerStatements:function() {
-        $("#navigation-statements").on('click', function(e) {
-            view.statements.init();
+    registerViewLinks:function() {
+        // show active view in nav var
+        $("#navigation-statements").on("click", function(e) {
+            view.statements.load();
+
+            $(".navigation-link").removeClass("active");
+            $("#navigation-statements").addClass("active");
         });
-        $("#navigation-charts").on('click', function(e) {
-            view.charts.init();
+        $("#navigation-charts").on("click", function(e) {
+            view.charts.load();
+
+            $(".navigation-link").removeClass("active");
+            $("#navigation-charts").addClass("active");
+        });
+        $("#navigation-settings").on("click", function(e) {
+            view.settings.load();
+
+            $(".navigation-link").removeClass("active");
+            $("#navigation-settings").addClass("active");
         });
     }
 }
 
 var view = {
-    default: "statements",
     init:function() {
-        view.loadDefault();
+        // TODO: Start-View laden
+        view.statements.load();
+        $("#navigation-statements").addClass("active");
     },
-    loadDefault:function() {
-        if (view.default == "statements") {
-            view.statements.init();
-        } else if (view.default == "charts") {
-            view.charts.init();
-        } else { // error case
-            view.statements.init();
-        }
+    load:function(viewName) {
+        view[viewName].load();
     },
     statements: {
-        init:function() {
+        load:function() {
             // hide views
             $(".view-container").hide();
 
             // fill table
             view.statements.fillTable();
 
-            // load statements table
+            // load statements
             $("#statements-container").show();
         },
         fillTable:function() {
@@ -43,10 +51,10 @@ var view = {
 
             // TODO: AJAX-Request für Statements
             var statements = [
-                { actor: "I", verb: "wrote", activity: "code", time: "yesterday" },
-                { actor: "I", verb: "write", activity: "code", time: "today" },
-                { actor: "I", verb: "will write", activity: "code", time: "tomorrow" },
-                { actor: "I", verb: "write", activity: "code", time: "all the time" }
+                { id: "1", actor: "I", verb: "wrote", activity: "code", timestamp: "yesterday" },
+                { id: "2", actor: "I", verb: "write", activity: "code", timestamp: "today" },
+                { id: "3", actor: "I", verb: "will write", activity: "code", timestamp: "tomorrow" },
+                { id: "4", actor: "I", verb: "write", activity: "code", timestamp: "all the time" }
             ];
             // TODO: Handlebars Block Expression
             var statementsListHtml = "";
@@ -58,18 +66,27 @@ var view = {
 
             $("#statements-list").html(statementsListHtml);
 
-            $(".statements-list-item").on('click', function(e) {
-                alert(e);
+            $(".statements-list-item").on("click", function(e) {
+                // TODO
             });
         }
     },
     charts: {
-        init:function() {
+        load:function() {
             // hide views
             $(".view-container").hide();
 
-            // load statements table
+            // load charts
             $("#charts-container").show();
+        }
+    },
+    settings: {
+        load:function() {
+            // hide views
+            $(".view-container").hide();
+
+            // load settings
+            $("#settings-container").show();
         }
     }
 }
