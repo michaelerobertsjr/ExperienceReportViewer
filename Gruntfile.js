@@ -15,6 +15,11 @@ module.exports = function(grunt) {
                 files: [
                     { src: "js/**", dest: "build/", expand: true, cwd: "src/" }
                 ]
+            },
+            server: {
+                files: [
+                    { src: "server.js", dest: "build/", expand: true, cwd: "src/" }
+                ]
             }
         },
         bake: {
