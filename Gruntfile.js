@@ -18,7 +18,9 @@ module.exports = function(grunt) {
         },
         bake: {
             view: {
-                options: {},
+                options: {
+                    process: false
+                },
                 files: {
                     "build/app.html": "src/view/template.html"
                 }

@@ -1,6 +1,12 @@
 <script type="text/javascript" src="lib/jquery-2.0.3/jquery-2.0.3.min.js"></script>
-<script type="text/javascript" src="lib/underscore-1.5.2/underscore-1.5.2.min.js"></script>
-<script type="text/javascript" src="lib/backbone-1.1.0/backbone-1.1.0.min.js"></script>
+<script type="text/javascript" src="lib/handlebars-1.1.2/handlebars-v1.1.2.js"></script>
 <script type="text/javascript" src="lib/sbadmin-1.0.0/js/bootstrap.js"></script>
+
+<script id="view-template-statements-list" type="text/x-handlebars-template">
+    <a href="#" class="list-group-item statements-list-item">
+        <h4 class="list-group-item-heading">{{actor}} <b>{{verb}}</b> {{activity}}</h4>
+        <p class="list-group-item-text">{{time}}</p>
+    </a>
+</script>
 
 <script type="text/javascript" src="js/app.js"></script>
