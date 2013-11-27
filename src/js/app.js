@@ -1,103 +1,93 @@
 var navigation = {
     init:function() {
+        navigation.registerBrandLink();
         navigation.registerViewLinks();
     },
+    registerBrandLink:function() {
+        $("#navigation-brand").on("click", function(e) {
+            view.show();
+        });
+    },
     registerViewLinks:function() {
-        // show active view in nav var
-        $("#navigation-statements").on("click", function(e) {
-            view.statements.load();
+        // get all view objects with a load function
+        var viewList = [];
+        for (var viewName in view) {
+            if (typeof view[viewName].load == "function") {
+                viewList.push(viewName);
+            }
+        }
 
-            $(".navigation-link").removeClass("active");
-            $("#navigation-statements").addClass("active");
-        });
-        $("#navigation-charts").on("click", function(e) {
-            view.charts.load();
-
-            $(".navigation-link").removeClass("active");
-            $("#navigation-charts").addClass("active");
-        });
-        $("#navigation-settings").on("click", function(e) {
-            view.settings.load();
-
-            $(".navigation-link").removeClass("active");
-            $("#navigation-settings").addClass("active");
+        // register navigation click event for each view
+        viewList.map(function(viewName) {
+            $("#navigation-"+viewName).on("click", function(e) {
+                view.show(viewName);
+            });
         });
     }
 }
 
 var view = {
-    init:function() {
-        // TODO: Start-View laden
-        view.statements.load();
-        $("#navigation-statements").addClass("active");
-    },
-    load:function(viewName) {
+    show:function(viewName) {
+        // default case
+        if (viewName == null) viewName = "statements";
+
+        // hide old view
+        $(".navigation-link").removeClass("active");
+        $(".view-container").hide();
+
+        // load view
         view[viewName].load();
+
+        // show new view
+        $("#navigation-"+viewName).addClass("active");
+        $("#"+viewName+"-container").show();
     },
     statements: {
         load:function() {
-            // hide views
-            $(".view-container").hide();
-
-            // fill table
             view.statements.fillTable();
-
-            // load statements
-            $("#statements-container").show();
         },
         fillTable:function() {
-            var source = $("#view-template-statements-list").html();
-            var template = Handlebars.compile(source);
-
             // TODO: AJAX-Request für Statements
+            // get statements
             var statements = [
                 { id: "1", actor: "I", verb: "wrote", activity: "code", timestamp: "yesterday" },
                 { id: "2", actor: "I", verb: "write", activity: "code", timestamp: "today" },
-                { id: "3", actor: "I", verb: "will write", activity: "code", timestamp: "tomorrow" },
-                { id: "4", actor: "I", verb: "write", activity: "code", timestamp: "all the time" }
+                { id: "3", actor: "I", verb: "write", activity: "code", timestamp: "all the time" }
             ];
-            // TODO: Handlebars Block Expression
+
+            // fill statements list
+            var template = Handlebars.compile($("#view-template-statements-list").html());
             var statementsListHtml = "";
-            for (var i = 0; i < statements.length; i++) {
-                var context = statements[i];
+            statements.map(function(context) {
                 var entryHtml = template(context);
                 statementsListHtml += entryHtml;
-            }
-
+            });
             $("#statements-list").html(statementsListHtml);
 
+
+            // register element click event
             $(".statements-list-item").on("click", function(e) {
-                // TODO
+                // show details
+                var detailContainer = "#"+$(this).attr("id")+" > .statements-list-item-details";
+                var hidden = $(detailContainer).data("hidden");
+                hidden ? $(detailContainer).show("fast") : $(detailContainer).hide("fast");
+                $(detailContainer).data("hidden", !hidden);
             });
         }
     },
     charts: {
         load:function() {
-            // hide views
-            $(".view-container").hide();
 
-            // load charts
-            $("#charts-container").show();
         }
     },
     settings: {
         load:function() {
-            // hide views
-            $(".view-container").hide();
 
-            // load settings
-            $("#settings-container").show();
         }
     }
 }
 
-var app = {
-    init:function() {
-        navigation.init();
-        view.init();
-    }
-}
-
 $(document).ready(function() {
-    app.init();
+    navigation.init();
+    view.show();
 });
