@@ -10,7 +10,7 @@ module.exports = function(grunt) {
                 files: [ { src: "lib/**", dest: "build/", expand: true } ]
             },
             js: {
-                files: [ { src: "js/**", dest: "build/", expand: true, cwd: "src/" } ]
+                files: [ { src: "js/**", dest: "build/", expand: true, cwd: "src/app" } ]
             },
             server: {
                 files: [ { src: "server.js", dest: "build/", expand: true, cwd: "src/" } ]
@@ -22,7 +22,7 @@ module.exports = function(grunt) {
                     process: false
                 },
                 files: {
-                    "build/app.html": "src/view/template.html"
+                    "build/app.html": "src/app/view/template.html"
                 }
             }
         }
