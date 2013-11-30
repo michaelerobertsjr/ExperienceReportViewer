@@ -8,12 +8,18 @@ module.exports = function(grunt) {
         copy: {
             lib: {
                 files: [ { src: "lib/**", dest: "build/", expand: true } ]
-            },
-            js: {
-                files: [ { src: "js/**", dest: "build/", expand: true, cwd: "src/app" } ]
+            }
+        },
+        coffee: {
+            app: {
+                files: {
+                    "build/js/app.js": "src/app/coffee/app.coffee"
+                }
             },
             server: {
-                files: [ { src: "server.js", dest: "build/", expand: true, cwd: "src/" } ]
+                files: {
+                    "build/server.js": "src/server/coffee/server.coffee"
+                }
             }
         },
         bake: {
@@ -30,10 +36,11 @@ module.exports = function(grunt) {
 
     grunt.loadNpmTasks('grunt-contrib-clean');
     grunt.loadNpmTasks('grunt-contrib-copy');
+    grunt.loadNpmTasks('grunt-contrib-coffee');
     grunt.loadNpmTasks('grunt-bake');
 
-    grunt.registerTask('deploy',      ['clean:full', 'copy',    'bake']);
-    grunt.registerTask('deploy-fast', ['clean:fast', 'copy:js', 'bake']);
+    grunt.registerTask('deploy-fast', ['clean:fast', 'coffee:app', 'bake']);
+    grunt.registerTask('deploy',      ['clean:full', 'copy', 'coffee', 'bake']);
 
     grunt.registerTask('default',     ['deploy-fast']);
 
