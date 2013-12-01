@@ -21,7 +21,7 @@ web Browser:
 * open app.html in chrome/firefox
 
 simple HTTP server
-* `node ./build/server.js`
+* `$ node ./build/server.js`
 * open [http://localhost:8080/app.html](http://localhost:8080/app.html)
 
 
