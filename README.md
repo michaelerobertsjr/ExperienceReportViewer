@@ -10,19 +10,19 @@
 ## Installation
 
 install required packages:
-    `$ npm install `
+* `$ npm install `
 
 build app:
-    `$ grunt deploy`
+* `$ grunt deploy`
 
 ## Run
 
 web Browser:
-    open app.html in chrome/firefox
+* open app.html in chrome/firefox
 
 simple HTTP server
-    `node ./build/server.js`
-    open [http://localhost:8080/app.html](http://localhost:8080/app.html)
+* `node ./build/server.js`
+* open [http://localhost:8080/app.html](http://localhost:8080/app.html)
 
 
 
