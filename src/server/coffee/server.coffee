@@ -3,6 +3,7 @@
 # Usage:
 # $ node server.js <Port>
 # (Default port is 8080)
+
 try
   connect = require "connect"
   port = process.argv[2]

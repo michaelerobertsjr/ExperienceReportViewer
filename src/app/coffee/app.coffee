@@ -7,11 +7,11 @@ class View
 
     # toggle navbar
     $(".navigation-link").removeClass "active"
-    $("#navigation-"+@name).addClass "active"
+    $("#navigation-" + @name).addClass "active"
 
     # show this view
     @_load()
-    $("#"+@name+"-container").show()
+    $("#" + @name + "-container").show()
 
   _load: ->
     # load view (subclasses must override this method)
@@ -43,7 +43,7 @@ class StatementsView extends View
 
     # register statement click event
     $(".statements-list-item").on "click", (e) ->
-      $("#"+$(this).attr("id")+" > .statements-list-item-details").toggle "fast"
+      $("#" + $(this).attr("id") + " > .statements-list-item-details").toggle "fast"
 
 
 
@@ -67,26 +67,30 @@ class SettingsView extends View
 
 class NavBar
   constructor: (views) ->
+    # register navbar click events
     for name, view of views
       @_registerViewLink view
 
   _registerViewLink: (view) ->
+    # navbar click event
     $("#navigation-" + view.name).on "click", (e) ->
       view.show()
 
 
+
 class Controller
   constructor: ->
+    # create views
     @views =
       statements: new StatementsView
       charts:     new ChartsView
       settings:   new SettingsView
 
+    # create navbar
     @navBar = new NavBar(@views)
 
-    # default view
+    # show default view
     @views.statements.show()
-
 
 
 
