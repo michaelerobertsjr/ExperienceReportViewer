@@ -15,4 +15,12 @@
     </a>
 </script>
 
+<script id="view-template-settings-selectbox" type="text/x-handlebars-template">
+    <select id="settings-{{id}}">
+        {{#each list}}
+        <option value="{{value}}">{{name}}</option>
+        {{/each}}
+    </select>
+</script>
+
 <script type="text/javascript" src="js/app.js"></script>

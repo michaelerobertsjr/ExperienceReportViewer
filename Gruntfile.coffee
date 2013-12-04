@@ -20,7 +20,9 @@ module.exports = (grunt) ->
 
     coffee:
       app:
-        files: { "build/js/app.js": "src/app/coffee/app.coffee" }
+        options:
+          join: true
+        files: { "build/js/app.js": ["src/app/coffee/modules.coffee", "src/app/coffee/main.coffee"] }
       server:
         files: { "build/server.js": "src/server/coffee/server.coffee" }
 
