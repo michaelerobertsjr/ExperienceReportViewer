@@ -30,7 +30,7 @@ module.exports = (grunt) ->
       view:
         options:
           process: false
-        files: { "build/app.html": "src/app/view/template.html" }
+        files: { "build/app.html": "src/app/html/view.html" }
 
   # build tasks
   grunt.registerTask 'deploy-fast', ['clean:fast', 'coffee:app', 'bake']

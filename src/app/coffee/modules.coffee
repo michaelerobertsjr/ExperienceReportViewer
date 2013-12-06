@@ -116,9 +116,6 @@ class SettingsView extends View
     $("#settings-defaultView").on "change", (e) ->
       config.set "defaultView", e.target.value
     # TODO select current default view on select box
-    $("#settings-defaultView > option").prop "selected", false
-    selector = "#settings-defaultView option[value=" + config.get "defaultView" + "]"
-    $(selector).prop "selected", true
 
 
   _createSettingsResetButton: ->

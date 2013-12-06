@@ -1,5 +1,13 @@
 # ExperienceReportViewer Build Project
 
+## Project file structure
+* `lib` plugins and external sources
+* `src` source files
+  * `app` app source files
+    * `coffee` application code modules
+    * `html` view templates
+  * `server` server source files
+    * `coffee` simple http test server
 
 ## Requirements
 
@@ -18,7 +26,7 @@ build app:
 ## Run
 
 web Browser:
-* open app.html in chrome/firefox
+* open build/app.html (recommended: chrome / firefox)
 
 simple HTTP server:
 * `$ node ./build/server.js`
