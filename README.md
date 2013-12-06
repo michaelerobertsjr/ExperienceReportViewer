@@ -8,6 +8,7 @@
     * `html` view templates
   * `server` server source files
     * `coffee` simple http test server
+* `test` statement test data
 
 ## Requirements
 
