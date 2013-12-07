@@ -33,7 +33,11 @@ module.exports = (grunt) ->
         files: { "build/app.html": "src/html/view.html" }
 
   # build tasks
+<<<<<<< HEAD
   grunt.registerTask "deploy-fast", ["clean:fast", "coffee:app", "copy:css", "bake"]
+=======
+  grunt.registerTask "deploy-fast", ["clean:fast", "coffee:app", "bake"]
+>>>>>>> 5330aa0bd064fcd1eaf546ece02b78aadcab02b3
   grunt.registerTask "deploy", ["clean:full", "copy", "coffee", "bake"]
 
   grunt.registerTask "default", ["deploy-fast"]
