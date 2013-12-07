@@ -1,13 +1,11 @@
 # ExperienceReportViewer Build Project
 
-## Project file structure
+## File structure
 * `lib` plugins and external sources
 * `src` source files
-  * `app` app source files
-    * `coffee` application code modules
-    * `html` view templates
-  * `server` server source files
-    * `coffee` simple http test server
+  * `coffee` application code modules
+  * `css` style sheets
+  * `html` view templates
 
 ## Requirements
 
@@ -17,20 +15,15 @@
 
 ## Installation
 
-install required packages:
+Install required packages:
 * `$ npm install `
 
-build app:
+Build app:
 * `$ grunt deploy`
 
 ## Run
 
-web Browser:
-* open build/app.html (recommended: chrome / firefox)
-
-simple HTTP server:
-* `$ node ./build/server.js`
-* open [http://localhost:8080/app.html](http://localhost:8080/app.html)
+* open build/app.html (recommended: Chrome / Firefox)
 
 
 
