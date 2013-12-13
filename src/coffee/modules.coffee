@@ -24,6 +24,51 @@ class Config
     data.split ","
 
 
+class DataRequest
+  constructor: (@name) ->
+    @baseUrl = "http://cloud.scorm.com/ScormEngineInterface/TCAPI/public/"
+    @_setDefaultParams()
+
+
+  _setDefaultParams: ->
+    if @name == "statements"
+      @params =
+        limit: 25
+        relatedActivities: false
+        relatedAgents: false
+
+
+  setParam: (name, value) ->
+    @params.name = value
+
+
+  get: (success, error) ->
+    # build url
+    url = @baseUrl + @name
+
+    # prepare request
+    first = true
+    for param, value of @params
+      if first
+        url += "?"
+        first = false
+      else
+        url += "&"
+      url += "#{param}=#{value}"
+    authToken = btoa "test:test"
+
+    $.ajax({
+      url: url,
+      method: "GET",
+      beforeSend: (req) ->
+        req.setRequestHeader "Authorization", authToken
+      success: (res) ->
+        success(res) if success?
+      error: ->
+        error() if error?
+    })
+
+
 ### view classes ###
 
 class View
@@ -57,55 +102,37 @@ class StatementsView extends View
 
   _showStatements: ->
     # create request
-    url = "http://cloud.scorm.com/ScormEngineInterface/TCAPI/public/statements"
-    requestParams =
-      limit: 25
-      relatedActivities: false
-      relatedAgents: false
-    first = true
-    for param, value of requestParams
-      if first
-        url += "?"
-        first = false
-      else
-        url += "&"
-      url += "#{param}=#{value}"
-    authToken = btoa "test:test"
+    req = new DataRequest "statements"
+    successCallback = (res) ->
+      # create statements list for templating
+      nextOid = 0
+      statementsList = []
+      for s in res.statements
+        rawData = (JSON.stringify s, null, 4).replace /\n/g, "<br />"
+        statement =
+          oid: nextOid++
+          actor: (if s.actor.name? then s.actor.name[0] else s.actor.mbox[0])
+          verb: s.verb
+          activity: (if s.object.id != "" then s.object.id else "something")
+          timestamp: s.timestamp
+          raw: rawData
+        statementsList.push statement
+      # generate html
+      listSelector = "#view-template-statements-list"
+      template = Handlebars.compile $(listSelector).html()
+      statementsListHtml = ""
+      for statementData in statementsList
+        statementsListHtml += template statementData
+      $("#statements-list").html statementsListHtml
+      # register statement click event
+      $(".statements-list-item").on "click", (e) ->
+        e.preventDefault()
+        details = "##{$(this).attr("id")} > .statements-list-item-raw"
+        $(details).toggle "fast"
+    errorCallback = () ->
+      console.log "chart error"
+    req.get successCallback, errorCallback
 
-    # get statements
-    $.ajax({
-      url: url,
-      method: "GET",
-      beforeSend: (req) ->
-        req.setRequestHeader "Authorization", authToken
-      success: (res) ->
-        # create statements list for templating
-        nextOid = 0
-        statementsList = []
-        for s in res.statements
-          console.log s
-          rawData = (JSON.stringify s, null, 4).replace /\n/g, "<br />"
-          statement =
-            oid: nextOid++
-            actor: (if s.actor.name? then s.actor.name[0] else s.actor.mbox[0])
-            verb: s.verb
-            activity: (if s.object.id != "" then s.object.id else "something")
-            timestamp: s.timestamp
-            raw: rawData
-          statementsList.push statement
-        # generate html
-        listSelector = "#view-template-statements-list"
-        template = Handlebars.compile $(listSelector).html()
-        statementsListHtml = ""
-        for statementData in statementsList
-          statementsListHtml += template statementData
-        $("#statements-list").html statementsListHtml
-        # register statement click event
-        $(".statements-list-item").on "click", (e) ->
-          e.preventDefault()
-          details = "##{$(this).attr("id")} > .statements-list-item-raw"
-          $(details).toggle "fast"
-    });
 
 
 class ChartsView extends View
@@ -115,6 +142,30 @@ class ChartsView extends View
 
   #override
   _load: ->
+    @_drawChart()
+
+
+  _drawChart: () ->
+    url = "http://www.highcharts.com/samples/data/jsonp.php?filename=aapl-c.json&callback=?"
+    $.getJSON url, (data) ->
+      console.log data
+      $("#charts-highstock").highcharts "StockChart", {
+        rangeSelector:
+          selected: 1
+        title:
+          text: "Stock Chart"
+        series: [{
+          name: "AAPL"
+          data: data
+          tooltip:
+            valueDecimals: 1
+        }]
+      }
+
+  _timestampToDate: (timestamp) ->
+    # timestamp format:YYYY-MM-ddTHH:mm:ss.SSSZ
+    parts = timestamp.split "-"
+    result = (parts[2].substr 0,1) + "." + parts[1] + "." + parts[0]
 
 
 class SettingsView extends View
