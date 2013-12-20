@@ -5,7 +5,7 @@
   "main": "Gruntfile.js",
   "repository": "",
   "author": "Webtech UOS 2013-14",
-  "license": "Open Source",
+  "license": "MIT",
   "readmeFilename": "README.md",
   "devDependencies": {
     "grunt": "~0.4.0",

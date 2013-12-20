@@ -24,6 +24,11 @@ class Config
     data.split ","
 
 
+  reset: ->
+    # TODO
+    localStorage.clear()
+
+
 class DataRequest
   constructor: (@name) ->
     @baseUrl = "http://cloud.scorm.com/ScormEngineInterface/TCAPI/public/"
@@ -46,7 +51,7 @@ class DataRequest
     @params[name]
 
 
-  get: (success, error) ->
+  getData: (success, error) ->
     # build url
     url = @baseUrl + @name
 
@@ -64,7 +69,7 @@ class DataRequest
     defaultError = () ->
       console.log "#{@name} data request error"
 
-    $.ajax({
+    $.ajax
       url: url,
       method: "GET",
       beforeSend: (req) ->
@@ -73,7 +78,7 @@ class DataRequest
         success res if success?
       error: ->
         error() if error? else dedaultError()
-    })
+
 
 
 ### view classes ###
@@ -139,13 +144,12 @@ class StatementsView extends View
         details = "##{$(this).attr("id")} > .statements-list-item-raw"
         $(details).toggle "fast"
     # show statements
-    req.get successCallback
+    req.getData successCallback
 
-  # TODO: show more statements
-  # 1. merken, welche statements geladen wurden (letzte id/datum speichern?)
-  # 2. neue statements laden
-  # 3. listeerweitern (html append)
-
+    # TODO: _showMoreStatements(...)
+    # 1. merken, welche statements geladen wurden (letzte id/datum speichern?)
+    # 2. neue statements laden
+    # 3. listeerweitern (html append)
 
 
 class ChartsView extends View
@@ -166,33 +170,34 @@ class ChartsView extends View
       # create chart data set
       map = {}
       for s in res.statements
-        time = s.timestamp.substr 0,13
-        key = (new Date (time.substr 0,4), (time.substr 5,2), (time.substr 8,2), (time.slice -2), 0, 0, 0).getTime()
-        # ausprobieren
+        # key = hour
+        time = s.timestamp.substr 0, 13
+        key = (new Date (time.substr 0, 4), (time.substr 5, 2), (time.substr 8, 2), (time.slice -2), 0, 0, 0).getTime()
+        # add to map
         if map[key]? then map[key]++ else map[key] = 1
       data = []
       for key, value of map
         data.push [key, value]
       result = data.sort (a, b) -> a[0] - b[0]
       # draw chart
-      $("#charts-highstock").highcharts "StockChart", {
+      $("#charts-highstock").highcharts "StockChart",
         rangeSelector:
           selected: 1
         title:
-          text: "Statements pro Stunde, TODO: x-Achse korrekt beschriften"
-        series: [{
-          name: "Statements"
-          data: result
-        }]
-      }
-
-    req.get successCallback
+          text: "Statements pro Stunde, TODO: x-Achse (Datum) korrekt beschriften"
+        series: [
+          {
+            name: "Statements"
+            data: result
+          }
+        ]
+    req.getData successCallback
 
 
   _timestampToDate: (timestamp) ->
     # timestamp format:YYYY-MM-ddTHH:mm:ss.SSSZ
     parts = timestamp.split "-"
-    result = (parts[2].substr 0,1) + "." + parts[1] + "." + parts[0]
+    result = (parts[2].substr 0, 1) + "." + parts[1] + "." + parts[0]
 
 
 class SettingsView extends View
