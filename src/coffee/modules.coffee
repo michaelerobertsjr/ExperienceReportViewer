@@ -204,7 +204,7 @@ class SettingsView extends View
   _load: ->
     $("#settings").html ""
 
-    @_createDefaultViewSelectBox()
+    #@_createDefaultViewSelectBox()
     @_createSettingsResetButton()
 
 
