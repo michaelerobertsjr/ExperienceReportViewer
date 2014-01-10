@@ -80,7 +80,6 @@ class DataRequest
         error() if error? else dedaultError()
 
 
-
 ### view classes ###
 
 class View
@@ -147,7 +146,7 @@ class StatementsView extends View
     req.getData successCallback
 
     # TODO: _showMoreStatements(...)
-    # 1. merken, welche statements geladen wurden (letzte id/datum speichern?)
+    # 1. more-token aus dem request verwenden
     # 2. neue statements laden
     # 3. listeerweitern (html append)
 
@@ -159,45 +158,84 @@ class ChartsView extends View
 
   #override
   _load: ->
-    @_drawChart()
+    draw = @_drawChart
+    # draw again on settings change events
+    draw()
+    $("input[name=charts-resolution]").on "change", ->
+      draw()
+    $("input[name=charts-limit]").on "keydown", (e) ->
+      if e.keyCode == 13
+        e.preventDefault()
+        draw()
+    $("input[name=charts-limit]").on "change", ->
+      draw()
 
 
-  _drawChart: () ->
-    # TODO
+  _drawChart: ->
+    resolution = $("input[name=charts-resolution]:checked").val()
+    limit = $("input[name=charts-limit]").val()
+
     req = new DataRequest "statements"
-    req.setParam "limit", 50
+    req.setParam "limit", limit
+    $("#charts-statements").html "Loading #{limit} statements ..."
     successCallback = (res) ->
-      # create chart data set
-      map = {}
-      for s in res.statements
-        # key = hour
-        time = s.timestamp.substr 0, 13
-        key = (new Date (time.substr 0, 4), (time.substr 5, 2), (time.substr 8, 2), (time.slice -2), 0, 0, 0).getTime()
-        # add to map
-        if map[key]? then map[key]++ else map[key] = 1
+      pointsOfTime = []
       data = []
-      for key, value of map
-        data.push [key, value]
-      result = data.sort (a, b) -> a[0] - b[0]
-      # draw chart
-      $("#charts-highstock").highcharts "StockChart",
-        rangeSelector:
-          selected: 1
+      map = {}
+
+      for s in res.statements
+        parts = s.timestamp.split "-"
+        if resolution == "daily"
+          key = (parts[2].substr 0, 2) + "." + parts[1] + "." + parts[0]
+        else if resolution == "monthly"
+          key = parts[1] + "." + parts[0]
+        else if resolution == "yearly"
+          key = parts[0]
+        if map[key]? then map[key]++ else map[key] = 1
+
+      # get number of statements
+      for k, v of map
+        pointsOfTime.push k
+        data.push v
+
+      if resolution != "yearly"
+        pointsOfTime.reverse()
+        data.reverse()
+
+      $("#charts-statements").highcharts
         title:
-          text: "Statements pro Stunde, TODO: x-Achse (Datum) korrekt beschriften"
-        series: [
-          {
-            name: "Statements"
-            data: result
-          }
-        ]
+          text: "Statements"
+          x: -20
+        subtitle:
+          text: resolution
+          x: -20
+        xAxis:
+          categories: pointsOfTime
+          labels:
+            enabled: true
+            overflow: true
+            rotation: 90
+        yAxis:
+          title:
+            text: "number of statements"
+          plotLines: [
+            { value: 0, width: 1, color: "#808080" }
+          ]
+        series: [{
+        name: "statements"
+        data: data
+        }]
+        plotOptions:
+          series:
+            dataLabels:
+              enabled: true
+              padding: 10
+              x: 0
+              y: -6
+              zIndex: 6
+        credits:
+          enabled: false
     req.getData successCallback
-
-
-  _timestampToDate: (timestamp) ->
-    # timestamp format:YYYY-MM-ddTHH:mm:ss.SSSZ
-    parts = timestamp.split "-"
-    result = (parts[2].substr 0, 1) + "." + parts[1] + "." + parts[0]
 
 
 class SettingsView extends View

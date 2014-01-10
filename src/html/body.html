@@ -16,7 +16,7 @@
             <ul class="nav navbar-nav side-nav">
                 <li class="navigation-link" id="navigation-statements"><a href="#"><i class="fa fa-table"></i> Statements</a></li>
                 <li class="navigation-link" id="navigation-charts"><a href="#"><i class="fa fa-bar-chart-o"></i> Charts</a></li>
-                <li class="navigation-link" id="navigation-settings"><a href="#"><i class="fa fa-bar-chart-o"></i> Settings</a></li>
+                <li class="navigation-link" id="navigation-settings"><a href="#"><i class="fa fa-gear"></i> Settings</a></li>
             </ul>
 
             <ul class="nav navbar-nav navbar-right navbar-user">
@@ -44,17 +44,25 @@
                     <hr />
                     <code>TODO: Filter</code>
                     <hr />
-                    <div id="statements-list"class="list-group">
+                    <div id="statements-list" class="list-group">
                         <small>Loading ...</small>
                     </div>
                 </div>
                 <div id="charts-container" class="view-container">
                     <h1>Charts</h1>
                     <hr />
-                    <code>TODO: multiple charts, chart settings</code>
+                    <code>TODO: chart settings formatieren</code>
+                    <form id="charts-settings">
+                        <h4>number of statements (0-500)</h4>
+                        <input type="number" name="charts-limit" value="50"/>
+                        <h4>resolution</h4>
+                        <input type="radio" name="charts-resolution" value="daily" checked> daily<br />
+                        <input type="radio" name="charts-resolution" value="monthly"> monthly<br />
+                        <input type="radio" name="charts-resolution" value="yearly"> yearly<br />
+                    </form>
                     <hr />
                     <div id="charts">
-                        <div id="charts-highstock">
+                        <div id="charts-statements">
                             <small>Loading ...</small>
                         </div>
                     </div>
