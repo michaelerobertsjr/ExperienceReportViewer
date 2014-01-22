@@ -80,7 +80,7 @@ class DataRequest
       success: (res) ->
         success res if success?
       error: ->
-        error() if error? else dedaultError() # TODO
+        if error? then error() else dedaultError()
 
 
 ### view classes ###
@@ -121,7 +121,7 @@ class StatementsView extends View
     req = new DataRequest "statements"
     req.setParam "limit", 25
     $("#statements-list").html "Loading #{req.getParam "limit"} statements ..."
-    successCallback = (res) ->
+    req.getData (res) ->
       @_list = res.statements
       @_more = res.more
 
@@ -131,8 +131,6 @@ class StatementsView extends View
 
       # define how the list of statements shall be created
       createList = (list, more) ->
-        console.log "creating the list"
-        console.log list.length
         if more?
           moreToken = more
         # create statements list for templating
@@ -168,31 +166,50 @@ class StatementsView extends View
       createList @_list, @_more
 
       # configure filters
-      $("#statements-filter-general").on "keyup", (e) ->
+      handleFilterEvent = (value) ->
         # general purpose filter: show all statements that contain the keyword
-        e.preventDefault()
-        value = e.target.value.toLowerCase()
-        console.log value
+        value = value.toLowerCase()
         result = []
         for s in list
           actor = (if s.actor.name? then s.actor.name[0] else s.actor.mbox[0])
           verb = s.verb
           activity = (if s.object.id != "" then s.object.id else "something")
           timestamp = s.timestamp
-          short = "#{actor} #{verb} #{activity} #{timestamp}".toLowerCase()
-          if (new RegExp value).test(short) then result.push s
 
-        $("#statements-list").html ""
+          filter =
+            actor: $("#statements-filter-selector-actor").prop("checked")
+            verb: $("#statements-filter-selector-verb").prop("checked")
+            activity: $("#statements-filter-selector-activity").prop("checked")
+            timestamp: $("#statements-filter-selector-timestamp").prop("checked")
+
+          searchString = ""
+          allSelected = filter.actor and filter.verb and filter.activity and filter.timestamp
+          noneSelected = !filter.actor and !filter.verb and !filter.activity and !filter.timestamp
+          if allSelected or noneSelected
+            searchString = "#{actor} #{verb} #{activity} #{timestamp}"
+          else
+            if filter.actor then searchString += "#{actor} "
+            if filter.verb then searchString += "#{verb} "
+            if filter.activity then searchString += "#{activity} "
+            if filter.timestamp then searchString += "#{timestamp} "
+          if (new RegExp value).test(searchString.toLowerCase()) then result.push s
         createList result
+
+      $("#statements-filter").on "keyup", (e) ->
+        e.preventDefault()
+        handleFilterEvent e.target.value
+
+      $("#statements-filter-form > .filter").on "change", (e) ->
+        handleFilterEvent $("#statements-filter").val()
+
+      $("#statements-filter-refresh").on "click", (e) ->
+        handleFilterEvent $("#statements-filter").val()
 
       $("#statements-filter-reset").on "click", (e) ->
         e.preventDefault()
         $("#statements-filter > input.filter").val ""
         $("#statements-list").html ""
         createList list, more
-
-    # fire requets, show statements
-    req.getData successCallback
 
 
 class ChartsView extends View
@@ -222,7 +239,7 @@ class ChartsView extends View
     req = new DataRequest "statements"
     req.setParam "limit", limit
     $("#charts-statements").html "Loading #{limit} statements ..."
-    successCallback = (res) ->
+    req.getData (res) ->
       pointsOfTime = []
       data = []
       map = {}
@@ -280,7 +297,6 @@ class ChartsView extends View
               zIndex: 6
         credits:
           enabled: false
-    req.getData successCallback
 
 
 class SettingsView extends View
@@ -316,7 +332,6 @@ class SettingsView extends View
     # TODO: select current default view on select box
     # register select box change event
     $("#settings-defaultView").on "change", (e) ->
-      console.log "neue default view: #{e.target.value}"
       config.set "defaultView", e.target.value
 
 

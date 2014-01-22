@@ -43,11 +43,16 @@
                     <h1>Statements <small>Overview</small></h1>
                     <hr />
                     <code>TODO: Filter formatieren</code>
-                    <form id="statements-filter">
+                    <form id="statements-filter-form">
                         <h4>Filter</h4>
-                        <input type="text" class="filter" id="statements-filter-general" />
-                        <br /><br />
-                        <input type="button" id="statements-filter-reset" value="reset"/>
+                        <input type="text" class="filter-text" id="statements-filter" /><br />
+                        <input type="checkbox" class="filter" id="statements-filter-selector-actor"/> Actor<br />
+                        <input type="checkbox" class="filter" id="statements-filter-selector-verb"/> Verb<br />
+                        <input type="checkbox" class="filter" id="statements-filter-selector-activity"/> Activity<br />
+                        <input type="checkbox" class="filter" id="statements-filter-selector-timestamp"/> Timestamp<br />
+                        <br />
+                        <input type="button" id="statements-filter-refresh" value="refresh" />
+                        <input type="button" id="statements-filter-reset" value="reset" />
                     </form>
                     <hr />
                     <div id="statements-list" class="list-group">
