@@ -21,15 +21,18 @@ class Config
 
   getArray: (itemName) ->
     data = @get itemName
-    data.split ","
+    if data?
+      data.split "," # TODO
 
 
   reset: ->
-    # TODO
+    # TODO: only delete items used by this app
     localStorage.clear()
 
 
 class DataRequest
+  # TODO: use custom LRS
+
   constructor: (@name) ->
     @baseUrl = "http://cloud.scorm.com/ScormEngineInterface/TCAPI/public/"
     @_setDefaultParams()
@@ -64,9 +67,9 @@ class DataRequest
       else
         url += "&"
       url += "#{param}=#{value}"
-    authToken = btoa "test:test"
+    authToken = btoa "test:test" # TODO
 
-    defaultError = () ->
+    defaultError = ->
       console.log "#{@name} data request error"
 
     $.ajax
@@ -77,7 +80,7 @@ class DataRequest
       success: (res) ->
         success res if success?
       error: ->
-        error() if error? else dedaultError()
+        error() if error? else dedaultError() # TODO
 
 
 ### view classes ###
@@ -104,6 +107,8 @@ class View
 class StatementsView extends View
   constructor: ->
     super "statements"
+    @_list = []
+    @_more = ""
 
 
   # override
@@ -117,38 +122,77 @@ class StatementsView extends View
     req.setParam "limit", 25
     $("#statements-list").html "Loading #{req.getParam "limit"} statements ..."
     successCallback = (res) ->
-      # create statements list for templating
-      nextOid = 0
-      statementsList = []
-      for s in res.statements
-        rawData = (JSON.stringify s, null, 4).replace /\n/g, "<br />"
-        statement =
-          oid: nextOid++
-          actor: (if s.actor.name? then s.actor.name[0] else s.actor.mbox[0])
-          verb: s.verb
-          activity: (if s.object.id != "" then s.object.id else "something")
-          timestamp: s.timestamp
-          raw: rawData
-        statementsList.push statement
-      # generate html
-      listSelector = "#view-template-statements-list"
-      template = Handlebars.compile $(listSelector).html()
-      statementsListHtml = ""
-      for statementData in statementsList
-        statementsListHtml += template statementData
-      $("#statements-list").html statementsListHtml
-      # register statement click event
-      $(".statements-list-item").on "click", (e) ->
-        e.preventDefault()
-        details = "##{$(this).attr("id")} > .statements-list-item-raw"
-        $(details).toggle "fast"
-    # show statements
-    req.getData successCallback
+      @_list = res.statements
+      @_more = res.more
 
-    # TODO: _showMoreStatements(...)
-    # 1. more-token aus dem request verwenden
-    # 2. neue statements laden
-    # 3. listeerweitern (html append)
+      # evil workaround for some coffeescript bullshit
+      list = @_list
+      more = @_more
+
+      # define how the list of statements shall be created
+      createList = (list, more) ->
+        console.log "creating the list"
+        console.log list.length
+        if more?
+          moreToken = more
+        # create statements list for templating
+        nextOid = 0
+        statementsList = []
+        for s in list
+          rawData = (JSON.stringify s, null, 4).replace /\n/g, "<br />"
+          statement =
+            oid: nextOid++
+            actor: (if s.actor.name? then s.actor.name[0] else s.actor.mbox[0])
+            verb: s.verb
+            activity: (if s.object.id != "" then s.object.id else "something")
+            timestamp: s.timestamp
+            raw: rawData
+          statementsList.push statement
+        # generate html
+        listSelector = "#view-template-statements-list"
+        template = Handlebars.compile $(listSelector).html()
+        statementsListHtml = ""
+        for statementData in statementsList
+          statementsListHtml += template statementData
+        if more?
+          # TODO: more-token implementieren
+          statementsListHtml += "<a >more</a>"
+        $("#statements-list").html statementsListHtml
+        # register statement click event
+        $(".statements-list-item").on "click", (e) ->
+          e.preventDefault()
+          details = "##{$(this).attr("id")} > .statements-list-item-raw"
+          $(details).toggle "fast"
+
+      # initialize the list
+      createList @_list, @_more
+
+      # configure filters
+      $("#statements-filter-general").on "keyup", (e) ->
+        # general purpose filter: show all statements that contain the keyword
+        e.preventDefault()
+        value = e.target.value.toLowerCase()
+        console.log value
+        result = []
+        for s in list
+          actor = (if s.actor.name? then s.actor.name[0] else s.actor.mbox[0])
+          verb = s.verb
+          activity = (if s.object.id != "" then s.object.id else "something")
+          timestamp = s.timestamp
+          short = "#{actor} #{verb} #{activity} #{timestamp}".toLowerCase()
+          if (new RegExp value).test(short) then result.push s
+
+        $("#statements-list").html ""
+        createList result
+
+      $("#statements-filter-reset").on "click", (e) ->
+        e.preventDefault()
+        $("#statements-filter > input.filter").val ""
+        $("#statements-list").html ""
+        createList list, more
+
+    # fire requets, show statements
+    req.getData successCallback
 
 
 class ChartsView extends View
@@ -204,7 +248,7 @@ class ChartsView extends View
 
       $("#charts-statements").highcharts
         title:
-          text: "Statements"
+          text: "statements"
           x: -20
         subtitle:
           text: resolution
@@ -216,14 +260,15 @@ class ChartsView extends View
             overflow: true
             rotation: 90
         yAxis:
+          min: 0
           title:
-            text: "number of statements"
+            text: ""
           plotLines: [
             { value: 0, width: 1, color: "#808080" }
           ]
         series: [{
-        name: "statements"
-        data: data
+          name: "number of statements"
+          data: data
         }]
         plotOptions:
           series:
@@ -252,6 +297,7 @@ class SettingsView extends View
 
 
   _createDefaultViewSelectBox: ->
+    # TODO
     id = "defaultView"
     # load select box template
     template = Handlebars.compile $("#view-template-settings-selectbox").html()
@@ -267,9 +313,10 @@ class SettingsView extends View
     html = template context
     # add html to settings view
     $("#settings").append html
-    # TODO select current default view on select box
+    # TODO: select current default view on select box
     # register select box change event
     $("#settings-defaultView").on "change", (e) ->
+      console.log "neue default view: #{e.target.value}"
       config.set "defaultView", e.target.value
 
 

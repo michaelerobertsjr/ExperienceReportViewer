@@ -19,7 +19,7 @@
                 <li class="navigation-link" id="navigation-settings"><a href="#"><i class="fa fa-gear"></i> Settings</a></li>
             </ul>
 
-            <ul class="nav navbar-nav navbar-right navbar-user">
+            <!--<ul class="nav navbar-nav navbar-right navbar-user">
                 <li class="dropdown user-dropdown">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-user"></i> Administrator <b
                             class="caret"></b></a>
@@ -31,7 +31,7 @@
                         <li><a href="#"><i class="fa fa-power-off"></i> Log Out</a></li>
                     </ul>
                 </li>
-            </ul>
+            </ul>-->
         </div>
     </nav>
 
@@ -42,7 +42,13 @@
                 <div id="statements-container" class="view-container">
                     <h1>Statements <small>Overview</small></h1>
                     <hr />
-                    <code>TODO: Filter</code>
+                    <code>TODO: Filter formatieren</code>
+                    <form id="statements-filter">
+                        <h4>Filter</h4>
+                        <input type="text" class="filter" id="statements-filter-general" />
+                        <br /><br />
+                        <input type="button" id="statements-filter-reset" value="reset"/>
+                    </form>
                     <hr />
                     <div id="statements-list" class="list-group">
                         <small>Loading ...</small>
