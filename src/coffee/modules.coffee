@@ -1,15 +1,27 @@
-### model classes ###
-
+# configuration manager class
+#
 class Config
+
+  # construct a new configuration manager
   constructor: ->
     @defaults =
       defaultView: "statements"
 
 
+  # sets a configuration value
+  #
+  # @param [String] itemName the items name
+  # @param [String, Number] itemValue the items value
+  #
   set: (itemName, itemValue) ->
     localStorage.setItem itemName, itemValue
 
 
+  # returns the value of a configuration item
+  #
+  # @param [String] itemName the items name
+  # @return [String, Number] the items value
+  #
   get: (itemName) ->
     data = localStorage.getItem itemName
     if not data?
@@ -19,26 +31,34 @@ class Config
     data
 
 
+  # returns the value of a configuration item as an array
+  #
+  # @param [String] itemName the items name
+  # @return [Array] the items value as an array
+  #
   getArray: (itemName) ->
     data = @get itemName
     if data?
       data.split "," # TODO
 
 
+  # resets all configuration items
+  #
   reset: ->
-    # TODO: only delete items used by this app
-    localStorage.clear()
+    localStorage.clear() # TODO: dont delete everything
 
 
+
+# manager for requesting data from the associated learning record store
+#
 class DataRequest
-  # TODO: use custom LRS
 
+  # builds a new ajax data request
+  #
+  # @param [String] name name of the data set
+  #
   constructor: (@name) ->
-    @baseUrl = "http://cloud.scorm.com/ScormEngineInterface/TCAPI/public/"
-    @_setDefaultParams()
-
-
-  _setDefaultParams: ->
+    @baseUrl = "http://cloud.scorm.com/ScormEngineInterface/TCAPI/public/" # TODO
     if @name == "statements"
       @params =
         limit: 50
@@ -46,14 +66,29 @@ class DataRequest
         relatedAgents: false
 
 
+  # adds a parameter to the ajax request
+  #
+  # @param [String] name parameter name
+  # @param [String] value parameter value
+  #
   setParam: (name, value) ->
     @params[name] = value
 
 
+  # returns a parameter value
+  #
+  # @param [String] name parameter name
+  # @return [String] parameter value
+  #
   getParam: (name) ->
     @params[name]
 
 
+  # executes the request and calls the given callback functions if possible
+  #
+  # @param [Function] success success callback function
+  # @param [Function] error error callback function
+  #
   getData: (success, error) ->
     # build url
     url = @baseUrl + @name
@@ -83,12 +118,20 @@ class DataRequest
         if error? then error() else dedaultError()
 
 
-### view classes ###
 
+# base view class
+#
 class View
+
+  # initializes a new view
+  #
+  # @param [String] name view name
+  #
   constructor: (@name) ->
 
 
+  # hides all other views and shows this view
+  #
   show: ->
     # hide other views
     $(".view-container").hide()
@@ -100,22 +143,35 @@ class View
     $("##{@name}-container").show()
 
 
+  # load data to be shown in the view
+  # subclasses must override this method
+  #
   _load: ->
-    # load view (subclasses must override this method)
+    # load view
 
 
+
+# statements view class
+#
 class StatementsView extends View
+
+  # initializes a new statements view
+  #
   constructor: ->
     super "statements"
     @_list = []
     @_more = ""
 
 
-  # override
-  _load: ->
+  # loads the list data
+  #
+  _load: -> # override
     @_showStatements()
 
 
+  # get statements from LRS and create a list
+  # create event listeners for buttons and filters
+  #
   _showStatements: ->
     # create request
     req = new DataRequest "statements"
@@ -208,17 +264,25 @@ class StatementsView extends View
       $("#statements-filter-reset").on "click", (e) ->
         e.preventDefault()
         $("#statements-filter > input.filter").val ""
+        $("#statements-filter").val ""
         $("#statements-list").html ""
         createList list, more
 
 
+
+# charts view class
+#
 class ChartsView extends View
+
+  # initializes the new view
+  #
   constructor: ->
     super "charts"
 
 
-  #override
-  _load: ->
+  # loads the chart data
+  #
+  _load: -> #override
     draw = @_drawChart
     # draw again on settings change events
     draw()
@@ -232,6 +296,8 @@ class ChartsView extends View
       draw()
 
 
+  # get statement data from LRS and create chart(s)
+  #
   _drawChart: ->
     resolution = $("input[name=charts-resolution]:checked").val()
     limit = $("input[name=charts-limit]").val()
@@ -299,19 +365,26 @@ class ChartsView extends View
           enabled: false
 
 
+
+# settings view class
+#
 class SettingsView extends View
+
+  # initializes the new view
+  #
   constructor: ->
     super "settings"
 
 
-  #override
-  _load: ->
+  # loads the settings menu
+  _load: -> #override
     $("#settings").html ""
-
     #@_createDefaultViewSelectBox()
     @_createSettingsResetButton()
 
 
+  # creates a select box to change the default view
+  #
   _createDefaultViewSelectBox: ->
     # TODO
     id = "defaultView"
@@ -335,6 +408,8 @@ class SettingsView extends View
       config.set "defaultView", e.target.value
 
 
+  # creates a button that resets the config
+  #
   _createSettingsResetButton: ->
     # create reset button for all settings
     $("#settings").append "<button id='settings-reset'>reset</button>"
@@ -342,22 +417,36 @@ class SettingsView extends View
       config.reset()
 
 
+
+# navigation bar class
+#
 class NavBar
+
+  # create event listeners for the view links
+  #
+  # @param [Object] views views
+  #
   constructor: (views) ->
     # register navbar click events
     for name, view of views
       @_registerViewLink view
 
 
+  # registers a view link
+  #
   _registerViewLink: (view) ->
     # navbar click event
     $("#navigation-#{view.name}").on "click", (e) ->
       view.show()
 
 
-### controller classes ###
 
+# application main class
+#
 class Application
+
+  # creates a new report viewer
+  #
   constructor: ->
     # create views
     @views =

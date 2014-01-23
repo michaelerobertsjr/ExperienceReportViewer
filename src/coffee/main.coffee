@@ -1,7 +1,5 @@
-# load global config
-config = new Config
+config = new Config # load global config
 
-# on document ready
-$ ->
+$ -> # on loading complete:
   # load application
   app = new Application
