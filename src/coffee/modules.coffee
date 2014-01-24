@@ -186,10 +186,6 @@ class StatementsView extends View
       @_list = res.statements
       @_more = res.more
 
-      # evil workaround for some coffeescript bullshit
-      list = @_list
-      more = @_more
-
       # define how the list of statements shall be created
       createList = (list, more) ->
         if more?
@@ -227,6 +223,10 @@ class StatementsView extends View
       # initialize the list
       createList @_list, @_more
 
+      # evil workaround
+      list = @_list
+      more = @_more
+
       # configure filters
       handleFilterEvent = (input) ->
         # general purpose filter: show all statements that contain the keyword
@@ -239,10 +239,10 @@ class StatementsView extends View
           timestamp = s.timestamp
 
           filter =
-            actor: $("#statements-filter-selector-actor").prop("checked")
-            verb: $("#statements-filter-selector-verb").prop("checked")
-            activity: $("#statements-filter-selector-activity").prop("checked")
-            timestamp: $("#statements-filter-selector-timestamp").prop("checked")
+            actor: $("#statements-filter-selector-actor").prop "checked"
+            verb: $("#statements-filter-selector-verb").prop "checked"
+            activity: $("#statements-filter-selector-activity").prop "checked"
+            timestamp: $("#statements-filter-selector-timestamp").prop "checked"
 
           searchString = ""
           allSelected = filter.actor and filter.verb and filter.activity and filter.timestamp
