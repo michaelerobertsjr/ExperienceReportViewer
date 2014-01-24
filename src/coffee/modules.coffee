@@ -10,8 +10,10 @@ class Config
 
   # sets a configuration value
   #
-  # @param [String] itemName the items name
-  # @param [String, Number] itemValue the items value
+  # @param [String] itemName
+  #     the items name
+  # @param [String, Number] itemValue
+  #     the items value
   #
   set: (itemName, itemValue) ->
     localStorage.setItem itemName, itemValue
@@ -19,8 +21,10 @@ class Config
 
   # returns the value of a configuration item
   #
-  # @param [String] itemName the items name
-  # @return [String, Number] the items value
+  # @param [String] itemName
+  #     the items name
+  # @return [String, Number]
+  #     the items value
   #
   get: (itemName) ->
     data = localStorage.getItem itemName
@@ -33,8 +37,10 @@ class Config
 
   # returns the value of a configuration item as an array
   #
-  # @param [String] itemName the items name
-  # @return [Array] the items value as an array
+  # @param [String] itemName
+  #     the items name
+  # @return [Array]
+  #     the items value as an array
   #
   getArray: (itemName) ->
     data = @get itemName
@@ -55,10 +61,13 @@ class DataRequest
 
   # builds a new ajax data request
   #
-  # @param [String] name name of the data set
+  # @param [String] name
+  #     name of the data set
   #
   constructor: (@name) ->
-    @baseUrl = "http://cloud.scorm.com/ScormEngineInterface/TCAPI/public/" # TODO
+    @baseUrl = "http://cloud.scorm.com/ScormEngineInterface/TCAPI/public/"
+    #@baseUrl = "http://localhost:8080/api/"
+
     if @name == "statements"
       @params =
         limit: 50
@@ -68,8 +77,10 @@ class DataRequest
 
   # adds a parameter to the ajax request
   #
-  # @param [String] name parameter name
-  # @param [String] value parameter value
+  # @param [String] name
+  #     parameter name
+  # @param [String] value
+  #     parameter value
   #
   setParam: (name, value) ->
     @params[name] = value
@@ -77,8 +88,10 @@ class DataRequest
 
   # returns a parameter value
   #
-  # @param [String] name parameter name
-  # @return [String] parameter value
+  # @param [String] name
+  #     parameter name
+  # @return [String]
+  #     parameter value
   #
   getParam: (name) ->
     @params[name]
@@ -86,8 +99,10 @@ class DataRequest
 
   # executes the request and calls the given callback functions if possible
   #
-  # @param [Function] success success callback function
-  # @param [Function] error error callback function
+  # @param [Function] success
+  #     success callback function
+  # @param [Function] error
+  #     error callback function
   #
   getData: (success, error) ->
     # build url
@@ -115,7 +130,7 @@ class DataRequest
       success: (res) ->
         success res if success?
       error: ->
-        if error? then error() else dedaultError()
+        if error? then error() else defaultError()
 
 
 
@@ -125,7 +140,8 @@ class View
 
   # initializes a new view
   #
-  # @param [String] name view name
+  # @param [String] name
+  #     view name
   #
   constructor: (@name) ->
 
@@ -158,29 +174,56 @@ class StatementsView extends View
   # initializes a new statements view
   #
   constructor: ->
+    # initialize view
     super "statements"
     @_list = []
     @_more = ""
 
+    # register click events for the search & filter interface
     $("#statements-search-toggle").on "click", (e) ->
       $("#statements-search-area").toggle "slow"
+      # default: show
+      if $("#statements-search-toggle").text() == "show"
+        newText = "hide"
+      else
+        newText = "show"
+      $("#statements-search-toggle").text newText
 
     $("#statements-filter-toggle").on "click", (e) ->
       $("#statements-filter-form").toggle "slow"
+      # default: hide
+      if $("#statements-filter-toggle").text() == "hide"
+        newText = "show"
+      else
+        newText = "hide"
+      $("#statements-filter-toggle").text newText
+
+    # register search mask
+    show = @_showStatements
+    $("#statements-search").on "keyup", (e) ->
+      e.preventDefault()
+      if e.keyCode == 13
+        req = new DataRequest "statements"
+        req.setParam "limit", 25
+        show req
+
 
   # loads the list data
   #
   _load: -> # override
-    @_showStatements()
+    req = new DataRequest "statements"
+    req.setParam "limit", 25
+    @_showStatements req
 
 
   # get statements from LRS and create a list
   # create event listeners for buttons and filters
   #
-  _showStatements: ->
-    # create request
-    req = new DataRequest "statements"
-    req.setParam "limit", 25
+  # @param [DataRequest] req
+  #     prepated date request
+  #
+  _showStatements: (req) ->
+    # execute request
     $("#statements-list").html "Loading #{req.getParam "limit"} statements ..."
     req.getData (res) ->
       @_list = res.statements
@@ -188,13 +231,14 @@ class StatementsView extends View
 
       # define how the list of statements shall be created
       createList = (list, more) ->
+        $("#statements-list").hide()
         if more?
           moreToken = more
         # create statements list for templating
         nextOid = 0
         statementsList = []
         for s in list
-          rawData = (JSON.stringify s, null, 4).replace /\n/g, "<br />"
+          rawData = (JSON.stringify s, null, 2).replace /\n/g, "<br />"
           statement =
             oid: nextOid++
             actor: (if s.actor.name? then s.actor.name[0] else s.actor.mbox[0])
@@ -207,13 +251,13 @@ class StatementsView extends View
         listSelector = "#view-template-statements-list"
         template = Handlebars.compile $(listSelector).html()
         statementsListHtml = ""
-
         for statementData in statementsList
           statementsListHtml += template statementData
         if more?
           # TODO: more-token implementieren
-          statementsListHtml += "<h4><a>more</a></h4>"
+          statementsListHtml += "<h5 align='center'><a>more ...</a><hr /></h5>"
         $("#statements-list").html statementsListHtml
+        $("#statements-list").fadeIn 400
         # register statement click event
         $(".statements-list-item").on "click", (e) ->
           e.preventDefault()
@@ -276,11 +320,13 @@ class StatementsView extends View
       $("#statements-filter-reset").on "click", (e) ->
         e.preventDefault()
         $("#statements-filter > input.filter").val ""
+        $('input[type=checkbox].filter').prop('checked', false);
         $("#statements-filter").val ""
         $("#statements-list").html ""
         handleFilterEvent ""
 
       # TODO: search
+
 
 
 # charts view class
@@ -309,6 +355,11 @@ class ChartsView extends View
       draw()
 
     $("#charts-settings-toggle").on "click", (e) ->
+      if $("#charts-settings-toggle").text() == "hide"
+        newText = "show"
+      else
+        newText = "hide"
+      $("#charts-settings-toggle").text newText
       $("#charts-settings").toggle "slow"
 
 
@@ -347,7 +398,7 @@ class ChartsView extends View
 
       $("#charts-statements").highcharts
         title:
-          text: "statements"
+          text: "Statements"
           x: -20
         subtitle:
           text: resolution
@@ -440,7 +491,8 @@ class NavBar
 
   # create event listeners for the view links
   #
-  # @param [Object] views views
+  # @param [Object] views
+  #     views
   #
   constructor: (views) ->
     # register navbar click events
@@ -473,3 +525,5 @@ class Application
     @navBar = new NavBar @views
     # show default view
     @views[config.get "defaultView"].show()
+    $(document).on "keyup", (e) ->
+      e.preventDefault()

@@ -1,3 +1,12 @@
+code {
+    color: #428bca;
+    background-color: #f2f4f9;
+}
+
+/*a.list-group-item:hover {
+    background-color: #f2f4f9;
+} */
+
 hr {
     padding: 0;
     margin: 2em 0 2em 0;
@@ -10,6 +19,8 @@ hr.statement-raw-seperator {
 
 pre.statement-raw-data {
     font-size: 10px;
+    background-color: #f2f4f9;
+    font-weight: bold;
 }
 
 .settings-item {
@@ -28,4 +39,21 @@ pre.statement-raw-data {
 
 .settings-item-data {
 
+}
+
+.statements-input {
+    width: 15em;
+}
+
+.statements-button {
+    width: 5em;
+    padding-bottom: 1px;
+}
+
+.toggle {
+    margin-bottom: 10px;
+}
+
+td {
+    width: 6em;
 }
