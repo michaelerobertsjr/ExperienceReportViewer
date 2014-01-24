@@ -78,11 +78,15 @@
                 <div id="charts-container" class="view-container">
                     <h1>Charts</h1>
                     <hr />
-                    <code>TODO: chart settings formatieren</code>
+                    <!--<code>
+                    TODO: chart settings formatieren
+                    </code>-->
+                    <h4>Settings <small>[<a id="charts-settings-toggle">toggle</a>]</small></h4>
                     <form id="charts-settings">
-                        <h4>number of statements (0-500)</h4>
-                        <input type="number" name="charts-limit" value="50"/>
-                        <h4>resolution</h4>
+                        <h5>Number of statements</h5>
+                        <input type="number" name="charts-limit" value="50"/><br />
+                        <br />
+                        <h5>Resolution</h5>
                         <input type="radio" name="charts-resolution" value="daily" checked> daily<br />
                         <input type="radio" name="charts-resolution" value="monthly"> monthly<br />
                         <input type="radio" name="charts-resolution" value="yearly"> yearly<br />

@@ -308,6 +308,9 @@ class ChartsView extends View
     $("input[name=charts-limit]").on "change", ->
       draw()
 
+    $("#charts-settings-toggle").on "click", (e) ->
+      $("#charts-settings").toggle "slow"
+
 
   # get statement data from LRS and create chart(s)
   #
