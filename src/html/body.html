@@ -43,22 +43,32 @@
                 <div id="statements-container" class="view-container">
                     <h1>Statements <small>Overview</small></h1>
                     <hr />
-                    <code>TODO: Filter formatieren</code>
-                    <form id="statements-filter-form">
-                        <h4>Filter</h4>
-                        <input type="text" class="filter-text" id="statements-filter" /><br />
-                        <input type="checkbox" class="filter" id="statements-filter-selector-actor"/> Actor<br />
-                        <input type="checkbox" class="filter" id="statements-filter-selector-verb"/> Verb<br />
-                        <input type="checkbox" class="filter" id="statements-filter-selector-activity"/> Activity<br />
-                        <input type="checkbox" class="filter" id="statements-filter-selector-timestamp"/> Timestamp<br />
+                    <!--<code>
+                        TODO: Filter/Suche formatieren
+                    </code>-->
+                    <h4>Search [<a id="statements-search-toggle">toggle</a>]</h4>
+                    <div id="statements-search-area">
+                        <form id="statements-search-form">
+                            <input type="text" id="statements-search" value="To be done"/><br />
+                        </form>
                         <br />
-                        <input type="button" id="statements-filter-refresh" value="refresh" />
-                        <input type="button" id="statements-filter-reset" value="reset" />
-                    </form>
+                        <h4>Filter [<a id="statements-filter-toggle">toggle</a>]</h4>
+                        <form id="statements-filter-form">
+                            <input type="text" class="filter-text" id="statements-filter" /><br />
+                            <input type="checkbox" class="filter" id="statements-filter-selector-actor"/> Actor<br />
+                            <input type="checkbox" class="filter" id="statements-filter-selector-verb"/> Verb<br />
+                            <input type="checkbox" class="filter" id="statements-filter-selector-activity"/> Activity<br />
+                            <input type="checkbox" class="filter" id="statements-filter-selector-timestamp"/> Timestamp<br />
+                            <br />
+                            <input type="button" id="statements-filter-refresh" value="refresh" />
+                            <input type="button" id="statements-filter-reset" value="reset" />
+                        </form>
+                    </div>
                     <hr />
                     <div id="statements-list" class="list-group">
                         <small>Loading ...</small>
                     </div>
+                    <hr />
                 </div>
                 <div id="charts-container" class="view-container">
                     <h1>Charts</h1>

@@ -162,6 +162,11 @@ class StatementsView extends View
     @_list = []
     @_more = ""
 
+    $("#statements-search-toggle").on "click", (e) ->
+      $("#statements-search-area").toggle "slow"
+
+    $("#statements-filter-toggle").on "click", (e) ->
+      $("#statements-filter-form").toggle "slow"
 
   # loads the list data
   #
@@ -206,11 +211,12 @@ class StatementsView extends View
         listSelector = "#view-template-statements-list"
         template = Handlebars.compile $(listSelector).html()
         statementsListHtml = ""
+
         for statementData in statementsList
           statementsListHtml += template statementData
         if more?
           # TODO: more-token implementieren
-          statementsListHtml += "<a >more</a>"
+          statementsListHtml += "<h4><a>more</a></h4>"
         $("#statements-list").html statementsListHtml
         # register statement click event
         $(".statements-list-item").on "click", (e) ->
@@ -222,9 +228,9 @@ class StatementsView extends View
       createList @_list, @_more
 
       # configure filters
-      handleFilterEvent = (value) ->
+      handleFilterEvent = (input) ->
         # general purpose filter: show all statements that contain the keyword
-        value = value.toLowerCase()
+        input = input.toLowerCase()
         result = []
         for s in list
           actor = (if s.actor.name? then s.actor.name[0] else s.actor.mbox[0])
@@ -248,7 +254,16 @@ class StatementsView extends View
             if filter.verb then searchString += "#{verb} "
             if filter.activity then searchString += "#{activity} "
             if filter.timestamp then searchString += "#{timestamp} "
-          if (new RegExp value).test(searchString.toLowerCase()) then result.push s
+          searchString = searchString.toLowerCase()
+
+          # scan search string for every word in the input string
+          inputWords = input.split " "
+          inputFound = true
+          for word in inputWords
+            if (new RegExp word).test(searchString) == false
+              inputFound = false
+          if inputFound then result.push s
+
         createList result
 
       $("#statements-filter").on "keyup", (e) ->
