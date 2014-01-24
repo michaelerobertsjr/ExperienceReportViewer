@@ -281,8 +281,9 @@ class StatementsView extends View
         $("#statements-filter > input.filter").val ""
         $("#statements-filter").val ""
         $("#statements-list").html ""
-        createList list, more
+        handleFilterEvent ""
 
+      # TODO: search
 
 
 # charts view class

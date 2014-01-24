@@ -49,13 +49,17 @@
                     <h4>Search <small>[<a id="statements-search-toggle">toggle</a>]</small></h4>
                     <div id="statements-search-area">
                         <form id="statements-search-form">
-                            <input type="text" id="statements-search" value="To be done"/><br />
+                            <input type="text" id="statements-search" value=""/><br />
+                            <input type="checkbox" class="filter" id="statements-search-selector-actor"/> Actor<br />
+                            <input type="checkbox" class="filter" id="statements-search-selector-verb"/> Verb<br />
+                            <input type="checkbox" class="filter" id="statements-search-selector-activity"/> Activity<br />
+                            <input type="checkbox" class="filter" id="statements-search-selector-timestamp"/> Timestamp<br />
                             <br />
                             <input type="button" id="statements-search-button" value="search" />
                         </form>
                         <br />
                         <h4>Filter <small>[<a id="statements-filter-toggle">toggle</a>]</small></h4>
-                        <form id="statements-filter-form">
+                        <form id="statements-filter-form" style="display:none;">
                             <input type="text" class="filter-text" id="statements-filter" /><br />
                             <input type="checkbox" class="filter" id="statements-filter-selector-actor"/> Actor<br />
                             <input type="checkbox" class="filter" id="statements-filter-selector-verb"/> Verb<br />
