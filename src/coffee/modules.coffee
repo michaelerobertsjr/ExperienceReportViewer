@@ -273,9 +273,6 @@ class StatementsView extends View
       $("#statements-filter-form > .filter").on "change", (e) ->
         handleFilterEvent $("#statements-filter").val()
 
-      $("#statements-filter-refresh").on "click", (e) ->
-        handleFilterEvent $("#statements-filter").val()
-
       $("#statements-filter-reset").on "click", (e) ->
         e.preventDefault()
         $("#statements-filter > input.filter").val ""
