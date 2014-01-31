@@ -65,8 +65,8 @@ class DataRequest
   #     name of the data set
   #
   constructor: (@name) ->
-    @baseUrl = "http://cloud.scorm.com/ScormEngineInterface/TCAPI/public/"
-    #@baseUrl = "http://localhost:8080/api/"
+    #@baseUrl = "http://cloud.scorm.com/ScormEngineInterface/TCAPI/public/"
+    @baseUrl = "http://localhost:8080/api/"
 
     if @name == "statements"
       @params =
@@ -118,7 +118,7 @@ class DataRequest
         url += "&"
       url += "#{param}=#{value}"
     authToken = btoa "test:test" # TODO
-
+    console.log url
     defaultError = ->
       console.log "#{@name} data request error"
 
@@ -128,7 +128,8 @@ class DataRequest
       beforeSend: (req) ->
         req.setRequestHeader "Authorization", authToken
       success: (res) ->
-        success res if success?
+        console.log res
+        if success? then success res
       error: ->
         if error? then error() else defaultError()
 
@@ -200,12 +201,39 @@ class StatementsView extends View
 
     # register search mask
     show = @_showStatements
+    fSearch = (e) -> # search function for later use
+      # reset filter
+      $("#statements-filter > input.filter").val ""
+      $('input[type=checkbox].filter').prop('checked', false);
+      $("#statements-filter").val ""
+      $("#statements-list").html ""
+      # request statements
+      req = new DataRequest "statements"
+      searchSelector = $("input[name=statements-search-selector]:checked").val()
+      searchValue = $("#statements-search").val()
+      switch searchSelector
+        when "agent"
+          # TODO
+        when "verb"
+          searchvalue = encodeURIComponent("http://adlnet.gov/expapi/verbs/"+searchValue)
+        when "activity"
+          # TODO
+        when "time"
+          # TODO
+        when "all"
+          # TODO
+      req.setParam searchSelector, searchValue
+      console.log req
+      show req
+      return false
+
     $("#statements-search").on "keyup", (e) ->
       e.preventDefault()
       if e.keyCode == 13
-        req = new DataRequest "statements"
-        req.setParam "limit", 25
-        show req
+        fSearch e
+
+    $("#statements-search-button").on "click", (e) ->
+      fSearch e
 
 
   # loads the list data
@@ -226,107 +254,109 @@ class StatementsView extends View
     # execute request
     $("#statements-list").html "Loading #{req.getParam "limit"} statements ..."
     req.getData (res) ->
-      @_list = res.statements
-      @_more = res.more
+      if res.statements != []
+        @_list = res.statements
+        @_more = res.more
 
-      # define how the list of statements shall be created
-      createList = (list, more) ->
-        $("#statements-list").hide()
-        if more?
-          moreToken = more
-        # create statements list for templating
-        nextOid = 0
-        statementsList = []
-        for s in list
-          rawData = (JSON.stringify s, null, 2).replace /\n/g, "<br />"
-          statement =
-            oid: nextOid++
-            actor: (if s.actor.name? then s.actor.name[0] else s.actor.mbox[0])
-            verb: s.verb
-            activity: (if s.object.id != "" then s.object.id else "something")
-            timestamp: s.timestamp
-            raw: rawData
-          statementsList.push statement
-        # generate html
-        listSelector = "#view-template-statements-list"
-        template = Handlebars.compile $(listSelector).html()
-        statementsListHtml = ""
-        for statementData in statementsList
-          statementsListHtml += template statementData
-        if more?
-          # TODO: more-token implementieren
-          statementsListHtml += "<h5 align='center'><a>more ...</a><hr /></h5>"
-        $("#statements-list").html statementsListHtml
-        $("#statements-list").fadeIn 400
-        # register statement click event
-        $(".statements-list-item").on "click", (e) ->
-          e.preventDefault()
-          details = "##{$(this).attr("id")} > .statements-list-item-raw"
-          $(details).toggle "fast"
-
-      # initialize the list
-      createList @_list, @_more
-
-      # evil workaround
-      list = @_list
-      more = @_more
-
-      # configure filters
-      handleFilterEvent = (input) ->
-        # general purpose filter: show all statements that contain the keyword
-        input = input.toLowerCase()
-        result = []
-        for s in list
-          actor = (if s.actor.name? then s.actor.name[0] else s.actor.mbox[0])
-          verb = s.verb
-          activity = (if s.object.id != "" then s.object.id else "something")
-          timestamp = s.timestamp
-
-          filter =
-            actor: $("#statements-filter-selector-actor").prop "checked"
-            verb: $("#statements-filter-selector-verb").prop "checked"
-            activity: $("#statements-filter-selector-activity").prop "checked"
-            timestamp: $("#statements-filter-selector-timestamp").prop "checked"
-
-          searchString = ""
-          allSelected = filter.actor and filter.verb and filter.activity and filter.timestamp
-          noneSelected = !filter.actor and !filter.verb and !filter.activity and !filter.timestamp
-          if allSelected or noneSelected
-            searchString = "#{actor} #{verb} #{activity} #{timestamp}"
+        # define how the list of statements shall be created
+        createList = (list, more) ->
+          $("#statements-list").hide()
+          if list? and list.length != 0
+            if more?
+              moreToken = more
+            # create statements list for templating
+            nextOid = 0
+            statementsList = []
+            for s in list
+              rawData = (JSON.stringify s, null, 2).replace /\n/g, "<br />"
+              statement =
+                oid: nextOid++
+                actor: (if s.actor.name? then s.actor.name[0] else s.actor.mbox[0])
+                verb: s.verb
+                activity: (if s.object.id != "" then s.object.id else "something")
+                timestamp: s.timestamp
+                raw: rawData
+              statementsList.push statement
+            # generate html
+            listSelector = "#view-template-statements-list"
+            template = Handlebars.compile $(listSelector).html()
+            statementsListHtml = ""
+            for statementData in statementsList
+              statementsListHtml += template statementData
+            if more?
+              # TODO: more-token implementieren
+              statementsListHtml += "<h5 align='center'><a>more ...</a><hr /></h5>"
+            $("#statements-list").html statementsListHtml
+            # register statement click event
+            $(".statements-list-item").on "click", (e) ->
+              e.preventDefault()
+              details = "##{$(this).attr("id")} > .statements-list-item-raw"
+              $(details).toggle "fast"
           else
-            if filter.actor then searchString += "#{actor} "
-            if filter.verb then searchString += "#{verb} "
-            if filter.activity then searchString += "#{activity} "
-            if filter.timestamp then searchString += "#{timestamp} "
-          searchString = searchString.toLowerCase()
+            $("#statements-list").html("No statements found.")
+          $("#statements-list").fadeIn 400
 
-          # scan search string for every word in the input string
-          inputWords = input.split " "
-          inputFound = true
-          for word in inputWords
-            if (new RegExp word).test(searchString) == false
-              inputFound = false
-          if inputFound then result.push s
 
-        createList result
+        # initialize the list
+        createList @_list, @_more
 
-      $("#statements-filter").on "keyup", (e) ->
-        e.preventDefault()
-        handleFilterEvent e.target.value
+        # evil workaround
+        list = @_list
+        more = @_more
 
-      $("#statements-filter-form > .filter").on "change", (e) ->
-        handleFilterEvent $("#statements-filter").val()
+        # configure filters
+        handleFilterEvent = (input) ->
+          # general purpose filter: show all statements that contain the keyword
+          input = input.toLowerCase()
+          result = []
+          for s in list
+            actor = (if s.actor.name? then s.actor.name[0] else s.actor.mbox[0])
+            verb = s.verb
+            activity = (if s.object.id != "" then s.object.id else "something")
+            timestamp = s.timestamp
 
-      $("#statements-filter-reset").on "click", (e) ->
-        e.preventDefault()
-        $("#statements-filter > input.filter").val ""
-        $('input[type=checkbox].filter').prop('checked', false);
-        $("#statements-filter").val ""
-        $("#statements-list").html ""
-        handleFilterEvent ""
+            filter =
+              actor: $("#statements-filter-selector-actor").prop "checked"
+              verb: $("#statements-filter-selector-verb").prop "checked"
+              activity: $("#statements-filter-selector-activity").prop "checked"
+              timestamp: $("#statements-filter-selector-timestamp").prop "checked"
 
-      # TODO: search
+            searchString = ""
+            allSelected = filter.actor and filter.verb and filter.activity and filter.timestamp
+            noneSelected = !filter.actor and !filter.verb and !filter.activity and !filter.timestamp
+            if allSelected or noneSelected
+              searchString = "#{actor} #{verb} #{activity} #{timestamp}"
+            else
+              if filter.actor then searchString += "#{actor} "
+              if filter.verb then searchString += "#{verb} "
+              if filter.activity then searchString += "#{activity} "
+              if filter.timestamp then searchString += "#{timestamp} "
+            searchString = searchString.toLowerCase()
 
+            # scan search string for every word in the input string
+            inputWords = input.split " "
+            inputFound = true
+            for word in inputWords
+              if (new RegExp word).test(searchString) == false
+                inputFound = false
+            if inputFound then result.push s
+
+          createList result
+
+        $("#statements-filter").on "keyup", (e) ->
+          e.preventDefault()
+          handleFilterEvent e.target.value
+
+        $("input[type=checkbox].filter").on "change", (e) ->
+          handleFilterEvent $("#statements-filter").val()
+
+        $("#statements-filter-reset").on "click", (e) ->
+          e.preventDefault()
+          $("#statements-filter > input.filter").val ""
+          $('input[type=checkbox].filter').prop('checked', false);
+          $("#statements-filter").val ""
+          $("#statements-list").html ""
+          handleFilterEvent ""
 
 
 # charts view class
@@ -377,59 +407,61 @@ class ChartsView extends View
       data = []
       map = {}
 
-      for s in res.statements
-        parts = s.timestamp.split "-"
-        if resolution == "daily"
-          key = (parts[2].substr 0, 2) + "." + parts[1] + "." + parts[0]
-        else if resolution == "monthly"
-          key = parts[1] + "." + parts[0]
-        else if resolution == "yearly"
-          key = parts[0]
-        if map[key]? then map[key]++ else map[key] = 1
+      if res.statements != []
+        for s in res.statements
+          parts = s.timestamp.split "-"
+          if resolution == "daily"
+            key = "#{parts[2].substr 0, 2}. #{parts[1]}. #{parts[0]}"
+          else if resolution == "monthly"
+            key = parts[1] + "." + parts[0]
+          else if resolution == "yearly"
+            key = parts[0]
+          if map[key]? then map[key]++ else map[key] = 1
 
-      # get number of statements
-      for k, v of map
-        pointsOfTime.push k
-        data.push v
+        # get number of statements
+        for k, v of map
+          pointsOfTime.push k
+          data.push v
 
-      if resolution != "yearly"
-        pointsOfTime.reverse()
-        data.reverse()
+        if resolution != "yearly"
+          pointsOfTime.reverse()
+          data.reverse()
 
-      $("#charts-statements").highcharts
-        title:
-          text: "Statements"
-          x: -20
-        subtitle:
-          text: resolution
-          x: -20
-        xAxis:
-          categories: pointsOfTime
-          labels:
-            enabled: true
-            overflow: true
-            rotation: 90
-        yAxis:
-          min: 0
+        $("#charts-statements").highcharts
           title:
-            text: ""
-          plotLines: [
-            { value: 0, width: 1, color: "#808080" }
-          ]
-        series: [{
-          name: "number of statements"
-          data: data
-        }]
-        plotOptions:
-          series:
-            dataLabels:
+            text: "Statements"
+            x: -20
+          subtitle:
+            text: resolution
+            x: -20
+          xAxis:
+            categories: pointsOfTime
+            labels:
               enabled: true
-              padding: 10
-              x: 0
-              y: -6
-              zIndex: 6
-        credits:
-          enabled: false
+              overflow: true
+              rotation: 90
+          yAxis:
+            min: 0
+            title:
+              text: ""
+            plotLines: [
+              { value: 0, width: 1, color: "#808080" }
+            ]
+          series: [{
+            name: "number of statements"
+            data: data
+          }]
+          plotOptions:
+            series:
+              dataLabels:
+                enabled: true
+                padding: 10
+                x: 0
+                y: -6
+                zIndex: 6
+          credits:
+            enabled: false
+
 
 
 
