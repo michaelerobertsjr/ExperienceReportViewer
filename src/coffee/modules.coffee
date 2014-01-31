@@ -423,20 +423,24 @@ class ChartsView extends View
     req.setParam "limit", limit
     $("#charts-statements").html "Loading #{limit} statements ..."
     req.getData (res) ->
+      $("#charts-statements").hide()
       pointsOfTime = []
       data = []
       map = {}
 
-      if res.statements != []
-        for s in res.statements
-          parts = s.timestamp.split "-"
-          if resolution == "daily"
-            key = "#{parts[2].substr 0, 2}. #{parts[1]}. #{parts[0]}"
-          else if resolution == "monthly"
-            key = parts[1] + "." + parts[0]
-          else if resolution == "yearly"
-            key = parts[0]
-          if map[key]? then map[key]++ else map[key] = 1
+      list = (if $.isArray res then res else res.statements)
+
+      if list.length > 0
+        for s in list
+          if s.timestamp?
+            parts = s.timestamp.split "-"
+            if resolution == "daily"
+              key = "#{parts[2].substr 0, 2}. #{parts[1]}. #{parts[0]}"
+            else if resolution == "monthly"
+              key = parts[1] + "." + parts[0]
+            else if resolution == "yearly"
+              key = parts[0]
+            if map[key]? then map[key]++ else map[key] = 1
 
         # get number of statements
         for k, v of map
@@ -447,41 +451,44 @@ class ChartsView extends View
           pointsOfTime.reverse()
           data.reverse()
 
-        $("#charts-statements").highcharts
-          title:
-            text: "Statements"
-            x: -20
-          subtitle:
-            text: resolution
-            x: -20
-          xAxis:
-            categories: pointsOfTime
-            labels:
-              enabled: true
-              overflow: true
-              rotation: 90
-          yAxis:
-            min: 0
+        if data.length > 0
+          $("#charts-statements").highcharts
             title:
-              text: ""
-            plotLines: [
-              { value: 0, width: 1, color: "#808080" }
-            ]
-          series: [{
-            name: "number of statements"
-            data: data
-          }]
-          plotOptions:
-            series:
-              dataLabels:
+              text: "Statements"
+              x: -20
+            subtitle:
+              text: resolution
+              x: -20
+            xAxis:
+              categories: pointsOfTime
+              labels:
                 enabled: true
-                padding: 10
-                x: 0
-                y: -6
-                zIndex: 6
-          credits:
-            enabled: false
-
+                overflow: true
+                rotation: 90
+            yAxis:
+              min: 0
+              title:
+                text: ""
+              plotLines: [
+                { value: 0, width: 1, color: "#808080" }
+              ]
+            series: [{
+              name: "number of statements"
+              data: data
+            }]
+            plotOptions:
+              series:
+                dataLabels:
+                  enabled: true
+                  padding: 10
+                  x: 0
+                  y: -6
+                  zIndex: 6
+            credits:
+              enabled: false
+        else
+          $("#charts-statements").html "No statements with timestamp found"
+        $("#charts-statements").fadeIn 400
 
 
 
