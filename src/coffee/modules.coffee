@@ -326,8 +326,8 @@ class StatementsView extends View
           input = input.toLowerCase()
           result = []
           for s in list
-            actor = (if s.actor.name? then s.actor.name[0] else s.actor.mbox[0])
-            verb = s.verb
+            actor = (if s.actor.name? then (if $.isArray s.actor.name then s.actor.name[0] else s.actor.name) else if s.actor.account? then s.actor.account.name else (if $.isArray s.actor.mbox then s.actor.mbox[0] else s.actor.mbox))
+            verb = (if s.verb.display['en-US']? then s.verb.display['en-US'] else s.verb)
             activity = (if s.object.id != "" then s.object.id else "something")
             timestamp = s.timestamp
 
