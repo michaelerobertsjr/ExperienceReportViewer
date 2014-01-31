@@ -118,7 +118,6 @@ class DataRequest
         url += "&"
       url += "#{param}=#{value}"
     authToken = btoa "test:test" # TODO
-    console.log url
     defaultError = ->
       console.log "#{@name} data request error"
 
@@ -224,12 +223,10 @@ class StatementsView extends View
           a = 0
       if searchSelector != "all"
         req.setParam searchSelector, searchValue
-      console.log req
       show req
       return false
     # search mask radio change event
     $("input[name=statements-search-selector]").on "change", (e) ->
-      console.log e.target.value
       if e.target.value == "all"
         $("#statements-search").prop "disabled", true
       else
@@ -286,7 +283,6 @@ class StatementsView extends View
             statementsList = []
             for s in list
               rawData = (JSON.stringify s, null, 2).replace /\n/g, "<br />"
-              console.log s
               statement =
                 oid: nextOid++
                 actor: (if s.actor.name? then (if $.isArray s.actor.name then s.actor.name[0] else s.actor.name) else if s.actor.account? then s.actor.account.name else (if $.isArray s.actor.mbox then s.actor.mbox[0] else s.actor.mbox))
