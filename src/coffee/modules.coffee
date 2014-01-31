@@ -227,10 +227,7 @@ class StatementsView extends View
       return false
     # search mask radio change event
     $("input[name=statements-search-selector]").on "change", (e) ->
-      if e.target.value == "all"
-        $("#statements-search").prop "disabled", true
-      else
-        $("#statements-search").prop "disabled", false
+      $("#statements-search").prop "disabled", (if e.target.value == "all" then true else false)
     # disable auto submit
     $("#statements-search").on "keypress", (e) ->
       if e.which == 13 then return false
@@ -283,13 +280,16 @@ class StatementsView extends View
             statementsList = []
             for s in list
               rawData = (JSON.stringify s, null, 2).replace /\n/g, "<br />"
+              console.log s
+
               statement =
                 oid: nextOid++
                 actor: (if s.actor.name? then (if $.isArray s.actor.name then s.actor.name[0] else s.actor.name) else if s.actor.account? then s.actor.account.name else (if $.isArray s.actor.mbox then s.actor.mbox[0] else s.actor.mbox))
-                verb: (if s.verb.display['en-US']? then s.verb.display['en-US'] else s.verb)
+                verb: (if s.verb.display? then s.verb.display[0] else (if s.verb.id? then s.verb.id else s.verb))
                 activity: (if s.object.id != "" then s.object.id else "something")
                 timestamp: s.timestamp
                 raw: rawData
+              console.log "verb: #{statement.verb}"
               statementsList.push statement
             # generate html
             listSelector = "#view-template-statements-list"
@@ -323,10 +323,9 @@ class StatementsView extends View
           result = []
           for s in list
             actor = (if s.actor.name? then (if $.isArray s.actor.name then s.actor.name[0] else s.actor.name) else if s.actor.account? then s.actor.account.name else (if $.isArray s.actor.mbox then s.actor.mbox[0] else s.actor.mbox))
-            verb = (if s.verb.display['en-US']? then s.verb.display['en-US'] else s.verb)
+            verb = (if s.verb.display? then s.verb.display[0] else (if s.verb.id? then s.verb.id else s.verb))
             activity = (if s.object.id != "" then s.object.id else "something")
             timestamp = s.timestamp
-
             filter =
               actor: $("#statements-filter-selector-actor").prop "checked"
               verb: $("#statements-filter-selector-verb").prop "checked"
