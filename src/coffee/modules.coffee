@@ -51,7 +51,7 @@ class Config
   # resets all configuration items
   #
   reset: ->
-    localStorage.clear() # TODO: dont delete everything
+    localStorage.clear()
 
 
 
@@ -65,8 +65,8 @@ class DataRequest
   #     name of the data set
   #
   constructor: (@name) ->
-    #@baseUrl = "http://cloud.scorm.com/ScormEngineInterface/TCAPI/public/"
     @baseUrl = "http://localhost:8080/api/"
+    #@baseUrl = "http://cloud.scorm.com/ScormEngineInterface/TCAPI/public/"
 
     if @name == "statements"
       @params =
@@ -128,7 +128,6 @@ class DataRequest
       beforeSend: (req) ->
         req.setRequestHeader "Authorization", authToken
       success: (res) ->
-        console.log res
         if success? then success res
       error: ->
         if error? then error() else defaultError()
@@ -214,24 +213,36 @@ class StatementsView extends View
       switch searchSelector
         when "agent"
           # TODO
+          a = 0
         when "verb"
           searchvalue = encodeURIComponent("http://adlnet.gov/expapi/verbs/"+searchValue)
         when "activity"
           # TODO
+          a = 0
         when "time"
           # TODO
-        when "all"
-          # TODO
-      req.setParam searchSelector, searchValue
+          a = 0
+      if searchSelector != "all"
+        req.setParam searchSelector, searchValue
       console.log req
       show req
       return false
-
-    $("#statements-search").on "keyup", (e) ->
+    # search mask radio change event
+    $("input[name=statements-search-selector]").on "change", (e) ->
+      console.log e.target.value
+      if e.target.value == "all"
+        $("#statements-search").prop "disabled", true
+      else
+        $("#statements-search").prop "disabled", false
+    # disable auto submit
+    $("#statements-search").on "keypress", (e) ->
+      if e.which == 13 then return false
+    # search mask key event
+    $("#statements-search").on "keyup", (e) -> #
       e.preventDefault()
       if e.keyCode == 13
         fSearch e
-
+    # search mask click event
     $("#statements-search-button").on "click", (e) ->
       fSearch e
 
@@ -254,10 +265,16 @@ class StatementsView extends View
     # execute request
     $("#statements-list").html "Loading #{req.getParam "limit"} statements ..."
     req.getData (res) ->
-      if res.statements != []
+      validReponse = false
+      if $.isArray res
+        validResponse = true
+        @_list = res
+      if res.statements? and $.isArray res.statements
+        validResponse = true
         @_list = res.statements
         @_more = res.more
 
+      if validResponse
         # define how the list of statements shall be created
         createList = (list, more) ->
           $("#statements-list").hide()
@@ -269,10 +286,11 @@ class StatementsView extends View
             statementsList = []
             for s in list
               rawData = (JSON.stringify s, null, 2).replace /\n/g, "<br />"
+              console.log s
               statement =
                 oid: nextOid++
-                actor: (if s.actor.name? then s.actor.name[0] else s.actor.mbox[0])
-                verb: s.verb
+                actor: (if s.actor.name? then (if $.isArray s.actor.name then s.actor.name[0] else s.actor.name) else if s.actor.account? then s.actor.account.name else (if $.isArray s.actor.mbox then s.actor.mbox[0] else s.actor.mbox))
+                verb: (if s.verb.display['en-US']? then s.verb.display['en-US'] else s.verb)
                 activity: (if s.object.id != "" then s.object.id else "something")
                 timestamp: s.timestamp
                 raw: rawData
@@ -296,14 +314,12 @@ class StatementsView extends View
             $("#statements-list").html("No statements found.")
           $("#statements-list").fadeIn 400
 
-
         # initialize the list
         createList @_list, @_more
 
         # evil workaround
         list = @_list
         more = @_more
-
         # configure filters
         handleFilterEvent = (input) ->
           # general purpose filter: show all statements that contain the keyword
@@ -346,6 +362,10 @@ class StatementsView extends View
         $("#statements-filter").on "keyup", (e) ->
           e.preventDefault()
           handleFilterEvent e.target.value
+
+        # disable auto submit
+        $("#statements-filter").on "keypress", (e) ->
+          if e.which == 13 then return false
 
         $("input[type=checkbox].filter").on "change", (e) ->
           handleFilterEvent $("#statements-filter").val()
