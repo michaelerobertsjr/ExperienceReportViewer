@@ -212,15 +212,15 @@ class StatementsView extends View
       switch searchSelector
         when "agent"
           # TODO
-          a = 0
+          alert "agent search not implemented yet"
         when "verb"
           searchvalue = encodeURIComponent("http://adlnet.gov/expapi/verbs/"+searchValue)
         when "activity"
           # TODO
-          a = 0
+          alert "activity search not implemented yet"
         when "time"
           # TODO
-          a = 0
+          alert "time search not implemented yet"
       if searchSelector != "all"
         req.setParam searchSelector, searchValue
       show req
