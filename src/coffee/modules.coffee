@@ -208,21 +208,21 @@ class StatementsView extends View
       searchSelector = $("input[name=statements-search-selector]:checked").val()
       searchValue = $("#statements-search").val()
       switch searchSelector
-        when "agent"
-          # TODO
-          alert "agent search not implemented yet"
+        # TODO: implement agent and timestamp search
+        # the selected search option must be added to the request url.
+        # the search input will most likely be URI (e.g. verb, activity)
+        # and must therefore be encoded/escaped
         when "verb"
-          searchvalue = encodeURIComponent("http://adlnet.gov/expapi/verbs/"+searchValue)
+          searchValue = encodeURIComponent(searchValue)
         when "activity"
-          # TODO
-          alert "activity search not implemented yet"
-        when "time"
-          # TODO
-          alert "time search not implemented yet"
-      if searchSelector != "all"
+          searchValue = encodeURIComponent(searchValue)
+        else
+          alert "#{searchSelector} search not implemented yet (CLICK ok)"
+      if searchSelector != "all" # searchSelector = all => show all statements, no specific search
         req.setParam searchSelector, searchValue
+      # request is prepared, now execute it
       show req
-      return false
+      #return false
     # end of: fSearch
 
     # search mask radio change event
