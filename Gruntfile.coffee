@@ -23,6 +23,7 @@ module.exports = (grunt) ->
     coffee:
       app:
         options:
+          sourceMap: true
           join: true
         files: { "build/js/app.js": ["src/coffee/modules.coffee", "src/coffee/main.coffee"] }
 
