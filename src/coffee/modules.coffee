@@ -383,6 +383,9 @@ class StatementsView extends View
         # disable auto form submit
         $("#statements-filter").on "keypress", (e) ->
           if e.which == 13 then return false
+      else
+        # invalid response from lrs
+        console.log "invalid response from LRS"
 
 
 # charts view class
