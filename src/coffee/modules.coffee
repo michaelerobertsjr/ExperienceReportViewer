@@ -32,7 +32,7 @@ class Config
       data = @defaults[itemName]
       if data?
         @set itemName, data
-    data
+    return data
 
 
   # returns the value of a configuration item as an array
@@ -45,7 +45,7 @@ class Config
   getArray: (itemName) ->
     data = @get itemName
     if data?
-      data.split ","
+      return data.split ","
 
 
   # resets all configuration items
@@ -65,8 +65,9 @@ class DataRequest
   #     name of the data set
   #
   constructor: (@name) ->
+    # TODO: use server url
+    # localhost for testing
     @baseUrl = "http://localhost:8080/api/"
-    #@baseUrl = "http://cloud.scorm.com/ScormEngineInterface/TCAPI/public/"
     if @name == "statements"
       @params =
         limit: 50
@@ -93,7 +94,7 @@ class DataRequest
   #     parameter value
   #
   getParam: (name) ->
-    @params[name]
+    return @params[name]
 
 
   # executes the request and calls the given callback functions if possible
@@ -115,23 +116,27 @@ class DataRequest
       else
         url += "&"
       url += "#{param}=#{value}"
-    authToken = btoa "test:test" # TODO: customize HTTP-Basic auth
-    defaultError = ->
-      console.log "#{@name} data request error"
     # execute request
     $.ajax
       url: url,
       method: "GET",
       beforeSend: (req) ->
-        req.setRequestHeader "Authorization", authToken
+        # TODO: customize HTTP-Basic auth / use OAuth
+        req.setRequestHeader "Authorization", btoa "test:test"
       success: (res) ->
         if success? then success res
       error: ->
-        if error? then error() else defaultError()
+        if error?
+          # use custom error handler
+          error()
+        else
+          # default error
+          console.log "#{@name} data request error"
 
 
 
 # base view class
+# view classes must extend this class
 #
 class View
 
@@ -217,7 +222,7 @@ class StatementsView extends View
         when "activity"
           searchValue = encodeURIComponent(searchValue)
         else
-          alert "#{searchSelector} search not implemented yet (CLICK ok)"
+          alert "Oops! #{searchSelector} search not implemented yet (CLICK ok)"
       if searchSelector != "all" # searchSelector = all => show all statements, no specific search
         req.setParam searchSelector, searchValue
       # request is prepared, now execute it
@@ -260,6 +265,7 @@ class StatementsView extends View
     # execute request
     req.getData (res) ->
       validReponse = false
+      # a valid response contains an array of statements and a more-token (optional)
       if $.isArray res
         validResponse = true
         @_list = res
@@ -295,7 +301,7 @@ class StatementsView extends View
             for statementData in statementsList
               statementsListHtml += template statementData
             if more?
-              # TODO: more-token implementieren
+              # TODO: implement more-token
               statementsListHtml += "<h5 align='center'><a>more ...</a><hr /></h5>"
             $("#statements-list").html statementsListHtml
             # register statement click event
@@ -484,10 +490,9 @@ class ChartsView extends View
               plotLines: [
                 { value: 0, width: 1, color: "#808080" }
               ]
-            series: [{
-              name: "number of statements"
-              data: data
-            }]
+            series: [
+              { name: "number of statements", data: data }
+            ]
             plotOptions:
               series:
                 dataLabels:
@@ -507,6 +512,7 @@ class ChartsView extends View
 # settings view class
 #
 # the settings view is a big TODO
+# later it should contain settings for LRS server url, account management, authentication, ...
 #
 class SettingsView extends View
 
@@ -521,7 +527,7 @@ class SettingsView extends View
   _load: -> #override
     $("#settings").html ""
     #@_createDefaultViewSelectBox()
-    @_createSettingsResetButton()
+    #@_createSettingsResetButton()
 
 
   # creates a select box to change the default view
@@ -578,6 +584,7 @@ class NavBar
     # navbar click event
     $("#navigation-#{view.name}").on "click", (e) ->
       view.show()
+
 
 
 # contains utility methods
