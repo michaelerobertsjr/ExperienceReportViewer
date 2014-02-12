@@ -12,8 +12,7 @@ module.exports = (grunt) ->
 
     # clean build directory
     clean:
-      full: ["build/*",]
-      fast: ["build/js/*", "build/app.html"]
+      build: ["build/*"]
 
     # copy libraries and stylesheets to build folder
     copy:
@@ -38,5 +37,5 @@ module.exports = (grunt) ->
         files: { "build/app.html": "src/html/view.html" }
 
 
-  grunt.registerTask "deploy", ["clean:full", "copy", "coffee", "bake"]
+  grunt.registerTask "deploy", ["clean", "copy", "coffee", "bake"]
   grunt.registerTask "default", ["deploy"]

@@ -3,6 +3,7 @@
 class Config
 
   # construct a new configuration manager
+  #
   constructor: ->
     @defaults =
       defaultView: "statements"
@@ -71,8 +72,8 @@ class DataRequest
     if @name == "statements"
       @params =
         limit: 50
-        relatedActivities: false
-        relatedAgents: false
+        #relatedActivities: false
+        #relatedAgents: false
 
 
   # adds a parameter to the ajax request
@@ -124,6 +125,7 @@ class DataRequest
         # TODO: customize HTTP-Basic auth / use OAuth
         req.setRequestHeader "Authorization", btoa "test:test"
       success: (res) ->
+        console.log res
         if success? then success res
       error: ->
         if error?
@@ -163,6 +165,8 @@ class View
 
   # load data to be shown in the view
   # subclasses must override this method
+  #
+  # @private
   #
   _load: ->
     # load view
@@ -227,8 +231,7 @@ class StatementsView extends View
         req.setParam searchSelector, searchValue
       # request is prepared, now execute it
       show req
-      #return false
-    # end of: fSearch
+    # end of function: fSearch
 
     # search mask radio change event
     $("input[name=statements-search-selector]").on "change", (e) ->
@@ -248,6 +251,8 @@ class StatementsView extends View
   # loads the initial list data
   # this method is called when the statements view constructor is called
   #
+  # @private
+  #
   _load: -> # override
     req = new DataRequest "statements"
     req.setParam "limit", 25
@@ -257,13 +262,15 @@ class StatementsView extends View
   # get statements from LRS and create a list
   # create event listeners for buttons and filters
   #
+  # @private
+  #
   # @param [DataRequest] req
   #     prepated date request
   #
   _showStatements: (req) ->
     $("#statements-list").html "Loading #{req.getParam "limit"} statements ..."
     # execute request
-    req.getData (res) ->
+    successCallback = (res) ->
       validReponse = false
       # a valid response contains an array of statements and a more-token (optional)
       if $.isArray res
@@ -302,6 +309,11 @@ class StatementsView extends View
               statementsListHtml += template statementData
             if more?
               # TODO: implement more-token
+              moreTemplate = Handlebars.compile $("#view-template-statements-more").html()
+              data =
+                more: more
+              moreHtml = template data
+              console.log moreHtml
               statementsListHtml += "<h5 align='center'><a>more ...</a><hr /></h5>"
             $("#statements-list").html statementsListHtml
             # register statement click event
@@ -314,7 +326,7 @@ class StatementsView extends View
             $("#statements-list").html("No statements found.")
           # show statements list
           $("#statements-list").fadeIn 400
-        # end of: createList
+        # end of funciton: createList
 
         # the list creation function is defined, now: create the initial list
         createList @_list, @_more
@@ -364,7 +376,7 @@ class StatementsView extends View
           # every statement of the current statement list has been scanned,
           # now create the new statements list with the result of the filter event
           createList result
-        # end of: handleFilterEvent
+        # end of function: handleFilterEvent
 
         # now the user input events are registered:
         # if the text input changes:
@@ -391,7 +403,10 @@ class StatementsView extends View
           if e.which == 13 then return false
       else
         # invalid response from lrs
-        console.log "invalid response from LRS"
+        $("#statements-list").html "invalid response from LRS"
+    errorCallback = () ->
+      $("#statements-list").html "request error"
+    req.getData successCallback, errorCallback
 
 
 # charts view class
@@ -406,6 +421,9 @@ class ChartsView extends View
 
   # loads the chart data
   # this function is called when the constructor is called
+  #
+  # @private
+  #
   _load: -> #override
     draw = @_drawChart
     # initial draw
@@ -431,6 +449,8 @@ class ChartsView extends View
 
   # get statement data from LRS and create chart
   #
+  # @private
+  #
   _drawChart: ->
     resolution = $("input[name=charts-resolution]:checked").val()
     limit = $("input[name=charts-limit]").val()
@@ -448,17 +468,10 @@ class ChartsView extends View
         # first: collect data in map
         for s in list
           if s.timestamp?
-            parts = s.timestamp.split "-"
-            if resolution == "daily"
-              key = "#{parts[2].substr 0, 2}. #{parts[1]}. #{parts[0]}"
-            else if resolution == "monthly"
-              key = parts[1] + "." + parts[0]
-            else if resolution == "yearly"
-              key = parts[0]
+            key = Utility.formatTimestamp s.timestamp, resolution
             if map[key]? then map[key]++ else map[key] = 1
-
         pointsOfTime = [] # contains all dates
-        data = [] # contains numbers of statements on each day
+        data = [] # contains numbers of statements on each date
         # get number of statements
         for k, v of map
           pointsOfTime.push k
@@ -524,6 +537,8 @@ class SettingsView extends View
 
   # loads the settings menu
   #
+  # @private
+  #
   _load: -> #override
     $("#settings").html ""
     #@_createDefaultViewSelectBox()
@@ -531,6 +546,8 @@ class SettingsView extends View
 
 
   # creates a select box to change the default view
+  #
+  # @private
   #
   _createDefaultViewSelectBox: ->
     id = "defaultView"
@@ -554,6 +571,8 @@ class SettingsView extends View
 
 
   # creates a button that resets the config
+  #
+  # @private
   #
   _createSettingsResetButton: ->
     # create reset button for all settings
@@ -580,6 +599,8 @@ class NavBar
 
   # registers a view link
   #
+  # @private
+  #
   _registerViewLink: (view) ->
     # navbar click event
     $("#navigation-#{view.name}").on "click", (e) ->
@@ -591,10 +612,29 @@ class NavBar
 #
 class Utility
 
+  # converts a timestamp to a date string
+  #
+  # @param [String] timestamp
+  #   timestamp
+  # @param [String] resolution
+  #   "daily", "monthly" or "yearly"
+  #
+  @formatTimestamp: (timestamp, resolution) ->
+    parts = timestamp.split "-"
+    if resolution == "daily"
+      result = "#{parts[2].substr 0, 2}. #{parts[1]}. #{parts[0]}"
+    else if resolution == "monthly"
+      result = "#{parts[1]}. #{parts[0]}"
+    else if resolution == "yearly"
+      result = parts[0]
+    else
+      result = "error"
+    return result
+
   # returns a statement to be shown in the statements list
   #
   # @param [Object] s
-  #
+  #   statement
   #
   @formatStatement: (s) ->
     statement = {}
